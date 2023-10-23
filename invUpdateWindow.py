@@ -1,7 +1,76 @@
+from PySide6.QtCore import QObject, QThread, Signal
 from PySide6.QtWidgets import QWidget
 import pandas as pd
 import datetime
 from inventoryUpdate_ui import Ui_Form
+
+class Worker(QObject):
+    finished = Signal()
+    task = Signal(str)
+    progress = Signal(int)
+
+    def run(self):
+        # InvUpdateWindow.start_update(self)
+        self.update_history = pd.read_excel('appdata/update_history.xlsx')
+
+        self.task.emit('Loading all_upc_inv')
+        InvUpdateWindow.load_all_upc_inv(self)
+        self.progress.emit(5)
+
+        self.task.emit('Updating AL inventory')
+        InvUpdateWindow.update_AL(self)
+        self.progress.emit(10)
+
+        self.task.emit('Updating VF inventory')
+        InvUpdateWindow.update_VF(self)
+        self.progress.emit(15)
+
+        self.task.emit('Updating BY inventory')
+        InvUpdateWindow.update_BY(self)
+        self.progress.emit(20)
+
+        self.task.emit('Updating NBF inventory')
+        InvUpdateWindow.update_NBF(self)
+        self.progress.emit(25)
+
+        self.task.emit('Updating OUTRE inventory')
+        InvUpdateWindow.update_OUTRE(self)
+        self.progress.emit(30)
+
+        self.task.emit('Updating HZ inventory')
+        InvUpdateWindow.update_HZ(self)
+        self.progress.emit(35)
+
+        self.task.emit('Updating SNG inventory')
+        InvUpdateWindow.update_SNG(self)
+        self.progress.emit(40)
+
+        self.task.emit('Updating backorded items')
+        InvUpdateWindow.update_backord(self)
+        self.progress.emit(45)
+
+        self.task.emit('Updating duplicate items')
+        InvUpdateWindow.update_duplicate(self)
+        self.progress.emit(50)
+
+        self.task.emit('Updating POS inventory')
+        InvUpdateWindow.update_POS(self)
+        self.progress.emit(55)
+
+        self.task.emit('Updating Updating Amazon List')
+        InvUpdateWindow.update_amazon(self)
+        self.progress.emit(60)
+
+        self.task.emit('Updating Amazon unshipped list')
+        InvUpdateWindow.update_amazon_ord(self)
+        self.progress.emit(65)
+
+        self.task.emit('Saving inventory data')
+        InvUpdateWindow.save_data(self)
+        self.progress.emit(100)
+
+        self.task.emit('Done!')
+        self.finished.emit()
 
 class InvUpdateWindow(QWidget):
     def __init__(self):
@@ -11,68 +80,32 @@ class InvUpdateWindow(QWidget):
 
         # self.ui.pushButton.setDisabled(True)
         self.ui.pushButton_2.clicked.connect(self.start_update)
-        
+
+    def reportTask(self, s):
+        self.ui.label.setText(s)
+
+    def reportProgress(self, n):
+        self.ui.progressBar.setValue(n)
+
     def start_update(self):
-        self.update_history = pd.read_excel('appdata/update_history.xlsx')
+        self.thread = QThread()
+        self.worker = Worker()
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.progress.connect(self.reportProgress)
+        self.worker.task.connect(self.reportTask)
 
-        self.ui.label.setText('Loading all_upc_inv')
-        self.load_all_upc_inv()
-        self.ui.progressBar.setValue(5)
+        self.thread.start()
         
-        self.ui.label.setText('Updating AL inventory')
-        self.update_AL()
-        self.ui.progressBar.setValue(10)
+        self.ui.pushButton_2.setEnabled(False)
+        self.ui.pushButton.setEnabled(False)
+
+        self.thread.finished.connect(lambda: self.ui.pushButton.setEnabled(True))
+        self.thread.finished.connect(lambda: self.ui.pushButton_2.setEnabled(True))
         
-        self.ui.label.setText('Updating VF inventory')
-        self.update_VF()
-        self.ui.progressBar.setValue(10)
-        
-        self.ui.label.setText('Updating BY inventory')
-        self.update_BY()
-        self.ui.progressBar.setValue(15)
-
-        self.ui.label.setText('Updating NBF inventory')
-        self.update_NBF()
-        self.ui.progressBar.setValue(20)
-
-        self.ui.label.setText('Updating OUTRE inventory')
-        self.update_OUTRE()
-        self.ui.progressBar.setValue(25)
-
-        self.ui.label.setText('Updating HZ inventory')
-        self.update_HZ()
-        self.ui.progressBar.setValue(30)
-
-        self.ui.label.setText('Updating SNG inventory')
-        self.update_SNG()
-        self.ui.progressBar.setValue(35)
-
-        self.ui.label.setText('Updating backorded items')
-        self.update_backord()
-        self.ui.progressBar.setValue(40)
-
-        self.ui.label.setText('Updating duplicate items')
-        self.update_duplicate()
-        self.ui.progressBar.setValue(45)
-
-        self.ui.label.setText('Updating POS inventory')
-        self.update_POS()
-        self.ui.progressBar.setValue(50)
-
-        self.ui.label.setText('Updating Amazon List')
-        self.update_amazon()
-        self.ui.progressBar.setValue(55)
-
-        self.ui.label.setText('Updating Amazon unshipped list')
-        self.update_amazon_ord()
-        self.ui.progressBar.setValue(60)
-
-        self.ui.label.setText('Saving inventory data')
-        self.save_data()
-        self.ui.progressBar.setValue(100)
-
-        self.ui.label.setText('Done')
-        self.ui.pushButton.setEnabled(True)
 
     def load_all_upc_inv(self):
         # all upc inv import
