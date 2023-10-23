@@ -73,6 +73,8 @@ class Worker(QObject):
         self.task.emit('Done!')
         self.finished.emit()
 
+        self.update_history.to_excel('appdata/update_history.xlsx', index=False)
+
 class InvUpdateWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -653,7 +655,8 @@ class InvUpdateWindow(QWidget):
         self.fromPOS.to_csv('fromPOS'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
         # self.all_amazon.to_csv('all_amazon'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
         self.amazon_order.to_csv('amazon_order'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
-        self.update_history.to_excel('appdata/update_history.xlsx', index=False)
+        # self.update_history.to_excel('appdata/update_history.xlsx', index=False)
+        self.update_history = pd.read_excel('appdata/update_history.xlsx')
 
         with pd.ExcelWriter('All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'.xlsx') as writer:
             self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False)
