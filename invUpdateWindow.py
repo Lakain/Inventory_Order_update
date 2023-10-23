@@ -2,6 +2,7 @@ from PySide6.QtCore import QObject, QThread, Signal
 from PySide6.QtWidgets import QWidget
 import pandas as pd
 import datetime
+import webbrowser
 from inventoryUpdate_ui import Ui_Form
 
 class Worker(QObject):
@@ -80,6 +81,15 @@ class InvUpdateWindow(QWidget):
 
         # self.ui.pushButton.setDisabled(True)
         self.ui.pushButton_2.clicked.connect(self.start_update)
+
+        self.ui.pushButton_AL.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/#search/kjo%40aliciaintl.com'))
+        self.ui.pushButton_VF.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#search/no-reply%40amekor.com'))
+        self.ui.pushButton_BY.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#search/superjoshuadad%40gmail.com'))
+        self.ui.pushButton_NBF.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#search/jokim%40chade.com'))
+        self.ui.pushButton_OUTRE.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#label/Company%2FOutre'))
+        self.ui.pushButton_HZ.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#label/Company%2FSensationnel'))
+        self.ui.pushButton_SNG.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#search/sampark%40snghair.com'))
+        self.ui.pushButton_bord.clicked.connect(lambda: webbrowser.open('https://docs.google.com/spreadsheets/d/1QAl-guabl4lCe83mRXjK7-51ZaSl-xEpC3v_3XrktE8/edit?usp=sharing'))
 
     def reportTask(self, s):
         self.ui.label.setText(s)
