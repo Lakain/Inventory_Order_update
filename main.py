@@ -1,5 +1,4 @@
-
-from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QVBoxLayout, QFileDialog, QMessageBox, QLabel, QHeaderView
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QVBoxLayout
 from PySide6.QtCore import QSize
 from invUpdateWindow import InvUpdateWindow
 from amazonOrderWindow import AmazonOrderWindow
