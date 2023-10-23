@@ -159,6 +159,21 @@ class Ui_Form(object):
 
         self.horizontalLayout.addLayout(self.verticalLayout_3)
 
+        self.verticalLayout_4 = QVBoxLayout()
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.checkBox_9 = QCheckBox(Form)
+        self.checkBox_9.setObjectName(u"checkBox_9")
+
+        self.verticalLayout_4.addWidget(self.checkBox_9)
+
+        self.checkBox_10 = QCheckBox(Form)
+        self.checkBox_10.setObjectName(u"checkBox_10")
+
+        self.verticalLayout_4.addWidget(self.checkBox_10)
+
+
+        self.horizontalLayout.addLayout(self.verticalLayout_4)
+
 
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 4)
 
@@ -190,5 +205,7 @@ class Ui_Form(object):
         self.pushButton_HZ.setText(QCoreApplication.translate("Form", u"HZ(Gmail)", None))
         self.pushButton_SNG.setText(QCoreApplication.translate("Form", u"SNG(Gmail)", None))
         self.pushButton_bord.setText(QCoreApplication.translate("Form", u"Backorder List", None))
+        self.checkBox_9.setText(QCoreApplication.translate("Form", u"Amazon All List", None))
+        self.checkBox_10.setText(QCoreApplication.translate("Form", u"Amazon Unshipped", None))
     # retranslateUi
 
