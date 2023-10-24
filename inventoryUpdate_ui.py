@@ -23,14 +23,13 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(409, 325)
+        Form.resize(409, 347)
         self.gridLayout = QGridLayout(Form)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.pushButton = QPushButton(Form)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setCheckable(False)
+        self.pushButton_2 = QPushButton(Form)
+        self.pushButton_2.setObjectName(u"pushButton_2")
 
-        self.gridLayout.addWidget(self.pushButton, 3, 2, 1, 1)
+        self.gridLayout.addWidget(self.pushButton_2, 5, 1, 1, 1)
 
         self.progressBar = QProgressBar(Form)
         self.progressBar.setObjectName(u"progressBar")
@@ -40,20 +39,15 @@ class Ui_Form(object):
         self.progressBar.setInvertedAppearance(False)
         self.progressBar.setTextDirection(QProgressBar.TopToBottom)
 
-        self.gridLayout.addWidget(self.progressBar, 2, 0, 1, 4)
+        self.gridLayout.addWidget(self.progressBar, 4, 0, 1, 4)
 
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout.addItem(self.horizontalSpacer_2, 3, 3, 1, 1)
-
-        self.pushButton_2 = QPushButton(Form)
-        self.pushButton_2.setObjectName(u"pushButton_2")
-
-        self.gridLayout.addWidget(self.pushButton_2, 3, 1, 1, 1)
+        self.gridLayout.addItem(self.horizontalSpacer_2, 5, 3, 1, 1)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout.addItem(self.horizontalSpacer, 3, 0, 1, 1)
+        self.gridLayout.addItem(self.horizontalSpacer, 5, 0, 1, 1)
 
         self.label = QLabel(Form)
         self.label.setObjectName(u"label")
@@ -62,7 +56,7 @@ class Ui_Form(object):
         font.setPointSize(9)
         self.label.setFont(font)
 
-        self.gridLayout.addWidget(self.label, 1, 0, 1, 4)
+        self.gridLayout.addWidget(self.label, 3, 0, 1, 4)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -161,6 +155,12 @@ class Ui_Form(object):
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(-1, -1, -1, 140)
+        self.checkBox_11 = QCheckBox(Form)
+        self.checkBox_11.setObjectName(u"checkBox_11")
+
+        self.verticalLayout_4.addWidget(self.checkBox_11)
+
         self.checkBox_9 = QCheckBox(Form)
         self.checkBox_9.setObjectName(u"checkBox_9")
 
@@ -175,7 +175,22 @@ class Ui_Form(object):
         self.horizontalLayout.addLayout(self.verticalLayout_4)
 
 
-        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 4)
+        self.gridLayout.addLayout(self.horizontalLayout, 1, 0, 1, 4)
+
+        self.pushButton = QPushButton(Form)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setCheckable(False)
+
+        self.gridLayout.addWidget(self.pushButton, 5, 2, 1, 1)
+
+        self.label_2 = QLabel(Form)
+        self.label_2.setObjectName(u"label_2")
+        font1 = QFont()
+        font1.setPointSize(10)
+        font1.setBold(True)
+        self.label_2.setFont(font1)
+
+        self.gridLayout.addWidget(self.label_2, 0, 0, 1, 4)
 
 
         self.retranslateUi(Form)
@@ -186,7 +201,6 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Inventory Update", None))
-        self.pushButton.setText(QCoreApplication.translate("Form", u"Close", None))
         self.pushButton_2.setText(QCoreApplication.translate("Form", u"Update", None))
         self.label.setText(QCoreApplication.translate("Form", u"Initialize...", None))
         self.checkBox_8.setText(QCoreApplication.translate("Form", u"AL - ALICIA", None))
@@ -205,7 +219,10 @@ class Ui_Form(object):
         self.pushButton_HZ.setText(QCoreApplication.translate("Form", u"HZ(Gmail)", None))
         self.pushButton_SNG.setText(QCoreApplication.translate("Form", u"SNG(Gmail)", None))
         self.pushButton_bord.setText(QCoreApplication.translate("Form", u"Backorder List", None))
+        self.checkBox_11.setText(QCoreApplication.translate("Form", u"POS Inventory", None))
         self.checkBox_9.setText(QCoreApplication.translate("Form", u"Amazon All List", None))
         self.checkBox_10.setText(QCoreApplication.translate("Form", u"Amazon Unshipped", None))
+        self.pushButton.setText(QCoreApplication.translate("Form", u"Close", None))
+        self.label_2.setText(QCoreApplication.translate("Form", u"Inventory Data Check List (Prepare before start update)", None))
     # retranslateUi
 

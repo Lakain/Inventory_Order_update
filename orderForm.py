@@ -4,7 +4,7 @@ import os
 
 from orderForm_ui import Ui_Form
 from pandasModel import PandasModel
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import  QSortFilterProxyModel
 
 class orderForm(QWidget):
@@ -29,5 +29,5 @@ class orderForm(QWidget):
         history = pd.concat([history, new_history], ignore_index=True)
         history.to_excel('appdata/order_history.xlsx', index=False)
         print(history)
-        self.model._data.to_excel('appdata/orderForm.xlsx', index=False)
+        self.model._data.style.set_properties(border="thin solid black").to_excel('appdata/orderForm.xlsx', index=False, engine='openpyxl')
         os.system('"'+os.getcwd()+'/appdata/orderForm.xlsx"')

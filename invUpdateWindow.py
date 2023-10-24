@@ -1,5 +1,5 @@
 from PySide6.QtCore import QObject, QThread, Signal
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
 import pandas as pd
 import datetime
 import webbrowser
@@ -117,6 +117,7 @@ class InvUpdateWindow(QWidget):
 
         self.thread.finished.connect(lambda: self.ui.pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.ui.pushButton_2.setEnabled(True))
+        self.thread.finished.connect(lambda: QMessageBox.information(self, "Info", "Update Finished"))
         
 
     def load_all_upc_inv(self):
@@ -567,6 +568,9 @@ class InvUpdateWindow(QWidget):
         fromPOS['Item Lookup Code'] = fromPOS['Item Lookup Code'].astype(str)
         comp_inv_data['Item Lookup Code'] = comp_inv_data['Item Lookup Code'].astype(str)
 
+        if len(fromPOS.merge(comp_inv_data, how='left', on='Item Lookup Code')) != len(fromPOS):
+            print('check duplicate UPC (POS - all_upc_inv)')
+
         fromPOS[column_name[4]] = fromPOS.merge(comp_inv_data, how='left', on='Item Lookup Code')['company Inventory']
 
         fromPOS[column_name[4]].fillna(0, inplace=True)
@@ -593,6 +597,10 @@ class InvUpdateWindow(QWidget):
         comp_inv_data = all_upc_inv[['UPC', 'company Inventory']].rename(columns={'UPC': 'product-id'})
         comp_inv_data['product-id'] = comp_inv_data['product-id'].astype(str)
 
+
+        if len(all_amazon.merge(comp_inv_data, how='left', on='product-id')) != len(all_amazon):
+            print('check duplicate UPC (all_amazon - all_upc_inv)')
+        
         all_amazon['inv_comp'] = all_amazon.merge(comp_inv_data, how='left', on='product-id')['company Inventory']
 
         all_amazon['inv_comp'].fillna(0, inplace=True)
@@ -659,10 +667,8 @@ class InvUpdateWindow(QWidget):
         self.update_history = pd.read_excel('appdata/update_history.xlsx')
 
         with pd.ExcelWriter('All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'.xlsx') as writer:
-            self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False)
-            self.amazon_order.to_excel(writer, sheet_name='order', index=False)
-            self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False)
-            self.all_upc_inv.to_excel(writer, sheet_name='all_upc_inv', index=False)
+            self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False, freeze_panes=(3,1))
+            self.amazon_order.to_excel(writer, sheet_name='order', index=False, freeze_panes=(1,0))
+            self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
+            self.all_upc_inv.to_excel(writer, sheet_name='all_upc_inv', index=False, freeze_panes=(1,0))
             self.update_history.to_excel(writer, sheet_name='update_history', index=False)
-
-        # QMessageBox.information(self, "Info", "Saved")
