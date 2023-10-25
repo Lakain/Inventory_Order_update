@@ -1,7 +1,8 @@
 from PySide6.QtCore import QObject, QThread, Signal
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
 import pandas as pd
 import datetime
+import webbrowser
 from inventoryUpdate_ui import Ui_Form
 
 class Worker(QObject):
@@ -72,6 +73,8 @@ class Worker(QObject):
         self.task.emit('Done!')
         self.finished.emit()
 
+        self.update_history.to_excel('appdata/update_history.xlsx', index=False)
+
 class InvUpdateWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -80,6 +83,15 @@ class InvUpdateWindow(QWidget):
 
         # self.ui.pushButton.setDisabled(True)
         self.ui.pushButton_2.clicked.connect(self.start_update)
+
+        self.ui.pushButton_AL.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/#search/kjo%40aliciaintl.com'))
+        self.ui.pushButton_VF.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#search/no-reply%40amekor.com'))
+        self.ui.pushButton_BY.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#search/superjoshuadad%40gmail.com'))
+        self.ui.pushButton_NBF.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#search/jokim%40chade.com'))
+        self.ui.pushButton_OUTRE.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#label/Company%2FOutre'))
+        self.ui.pushButton_HZ.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#label/Company%2FSensationnel'))
+        self.ui.pushButton_SNG.clicked.connect(lambda: webbrowser.open('https://mail.google.com/mail/u/0/?tab=rm&ogbl#search/sampark%40snghair.com'))
+        self.ui.pushButton_bord.clicked.connect(lambda: webbrowser.open('https://docs.google.com/spreadsheets/d/1QAl-guabl4lCe83mRXjK7-51ZaSl-xEpC3v_3XrktE8/edit?usp=sharing'))
 
     def reportTask(self, s):
         self.ui.label.setText(s)
@@ -105,8 +117,8 @@ class InvUpdateWindow(QWidget):
 
         self.thread.finished.connect(lambda: self.ui.pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.ui.pushButton_2.setEnabled(True))
+        self.thread.finished.connect(lambda: QMessageBox.information(self, "Info", "Update Finished"))
         
-
     def load_all_upc_inv(self):
         # all upc inv import
         # filename = QFileDialog.getOpenFileName(self, "Select File", "./", "Any Files (*)")
@@ -506,11 +518,11 @@ class InvUpdateWindow(QWidget):
         self.all_upc_inv['UPC'] = self.all_upc_inv['UPC'].astype(str)
         self.all_upc_inv['DESCRIPTION'] = self.all_upc_inv['DESCRIPTION'].astype(str)
         self.all_upc_inv['EXTENDED DESCRIPTION'] = self.all_upc_inv['EXTENDED DESCRIPTION'].astype(str)
+        print(self.all_upc_inv.loc[self.all_upc_inv["UPC"].isin(backorder_list['upc'])])
         self.all_upc_inv.loc[self.all_upc_inv["UPC"].isin(backorder_list['upc']) , "company Inventory"] = 0
         self.all_upc_inv[self.all_upc_inv['UPC'].isin(backorder_list['upc'])]
 
         # QMessageBox.information(self, "Info", "Updated")
-        # self.button_backord.setDisabled(True)
 
     def update_duplicate(self):
         # filename = QFileDialog.getOpenFileName(self, "Select File dulplicate_list", "./", "Any Files (*)")
@@ -555,6 +567,9 @@ class InvUpdateWindow(QWidget):
         fromPOS['Item Lookup Code'] = fromPOS['Item Lookup Code'].astype(str)
         comp_inv_data['Item Lookup Code'] = comp_inv_data['Item Lookup Code'].astype(str)
 
+        if len(fromPOS.merge(comp_inv_data, how='left', on='Item Lookup Code')) != len(fromPOS):
+            print('check duplicate UPC (POS - all_upc_inv)')
+
         fromPOS[column_name[4]] = fromPOS.merge(comp_inv_data, how='left', on='Item Lookup Code')['company Inventory']
 
         fromPOS[column_name[4]].fillna(0, inplace=True)
@@ -581,6 +596,10 @@ class InvUpdateWindow(QWidget):
         comp_inv_data = all_upc_inv[['UPC', 'company Inventory']].rename(columns={'UPC': 'product-id'})
         comp_inv_data['product-id'] = comp_inv_data['product-id'].astype(str)
 
+
+        if len(all_amazon.merge(comp_inv_data, how='left', on='product-id')) != len(all_amazon):
+            print('check duplicate UPC (all_amazon - all_upc_inv)')
+        
         all_amazon['inv_comp'] = all_amazon.merge(comp_inv_data, how='left', on='product-id')['company Inventory']
 
         all_amazon['inv_comp'].fillna(0, inplace=True)
@@ -643,13 +662,12 @@ class InvUpdateWindow(QWidget):
         self.fromPOS.to_csv('fromPOS'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
         # self.all_amazon.to_csv('all_amazon'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
         self.amazon_order.to_csv('amazon_order'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
-        self.update_history.to_excel('appdata/update_history.xlsx', index=False)
+        # self.update_history.to_excel('appdata/update_history.xlsx', index=False)
+        self.update_history = pd.read_excel('appdata/update_history.xlsx')
 
         with pd.ExcelWriter('All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'.xlsx') as writer:
-            self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False)
-            self.amazon_order.to_excel(writer, sheet_name='order', index=False)
-            self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False)
-            self.all_upc_inv.to_excel(writer, sheet_name='all_upc_inv', index=False)
+            self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False, freeze_panes=(3,1))
+            self.amazon_order.to_excel(writer, sheet_name='order', index=False, freeze_panes=(1,0))
+            self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
+            self.all_upc_inv.to_excel(writer, sheet_name='all_upc_inv', index=False, freeze_panes=(1,0))
             self.update_history.to_excel(writer, sheet_name='update_history', index=False)
-
-        # QMessageBox.information(self, "Info", "Saved")
