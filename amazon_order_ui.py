@@ -114,6 +114,10 @@ class Ui_Form(object):
 
         self.tabWidget = QTabWidget(Form)
         self.tabWidget.setObjectName(u"tabWidget")
+        self.tabWidget.setTabPosition(QTabWidget.North)
+        self.tabWidget.setTabShape(QTabWidget.Rounded)
+        self.tabWidget.setTabsClosable(False)
+        self.tabWidget.setTabBarAutoHide(False)
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -125,12 +129,14 @@ class Ui_Form(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.tableView = QTableView(self.tab)
         self.tableView.setObjectName(u"tableView")
+        self.tableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tableView.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed)
         self.tableView.setSortingEnabled(True)
         self.tableView.setCornerButtonEnabled(True)
         self.tableView.horizontalHeader().setCascadingSectionResizes(False)
         self.tableView.horizontalHeader().setDefaultSectionSize(100)
         self.tableView.horizontalHeader().setStretchLastSection(True)
+        self.tableView.verticalHeader().setCascadingSectionResizes(False)
 
         self.horizontalLayout_2.addWidget(self.tableView)
 
@@ -141,6 +147,9 @@ class Ui_Form(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.tableView_3 = QTableView(self.tab_2)
         self.tableView_3.setObjectName(u"tableView_3")
+        self.tableView_3.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tableView_3.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed)
+        self.tableView_3.horizontalHeader().setStretchLastSection(True)
 
         self.horizontalLayout.addWidget(self.tableView_3)
 
@@ -159,9 +168,16 @@ class Ui_Form(object):
         self.gridLayout.addWidget(self.listWidget, 4, 8, 1, 3)
 
         QWidget.setTabOrder(self.lineEdit, self.pushButton_apply)
-        QWidget.setTabOrder(self.pushButton_apply, self.tableView_2)
+        QWidget.setTabOrder(self.pushButton_apply, self.tabWidget)
+        QWidget.setTabOrder(self.tabWidget, self.tableView)
+        QWidget.setTabOrder(self.tableView, self.tableView_2)
         QWidget.setTabOrder(self.tableView_2, self.listWidget)
-        QWidget.setTabOrder(self.listWidget, self.pushButton_create)
+        QWidget.setTabOrder(self.listWidget, self.pushButton_add)
+        QWidget.setTabOrder(self.pushButton_add, self.pushButton_del)
+        QWidget.setTabOrder(self.pushButton_del, self.pushButton_clr)
+        QWidget.setTabOrder(self.pushButton_clr, self.pushButton_create)
+        QWidget.setTabOrder(self.pushButton_create, self.pushButton_refresh)
+        QWidget.setTabOrder(self.pushButton_refresh, self.tableView_3)
 
         self.retranslateUi(Form)
         self.lineEdit.editingFinished.connect(self.pushButton_apply.click)

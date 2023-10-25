@@ -119,7 +119,6 @@ class InvUpdateWindow(QWidget):
         self.thread.finished.connect(lambda: self.ui.pushButton_2.setEnabled(True))
         self.thread.finished.connect(lambda: QMessageBox.information(self, "Info", "Update Finished"))
         
-
     def load_all_upc_inv(self):
         # all upc inv import
         # filename = QFileDialog.getOpenFileName(self, "Select File", "./", "Any Files (*)")
@@ -519,11 +518,11 @@ class InvUpdateWindow(QWidget):
         self.all_upc_inv['UPC'] = self.all_upc_inv['UPC'].astype(str)
         self.all_upc_inv['DESCRIPTION'] = self.all_upc_inv['DESCRIPTION'].astype(str)
         self.all_upc_inv['EXTENDED DESCRIPTION'] = self.all_upc_inv['EXTENDED DESCRIPTION'].astype(str)
+        print(self.all_upc_inv.loc[self.all_upc_inv["UPC"].isin(backorder_list['upc'])])
         self.all_upc_inv.loc[self.all_upc_inv["UPC"].isin(backorder_list['upc']) , "company Inventory"] = 0
         self.all_upc_inv[self.all_upc_inv['UPC'].isin(backorder_list['upc'])]
 
         # QMessageBox.information(self, "Info", "Updated")
-        # self.button_backord.setDisabled(True)
 
     def update_duplicate(self):
         # filename = QFileDialog.getOpenFileName(self, "Select File dulplicate_list", "./", "Any Files (*)")
