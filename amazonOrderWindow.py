@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt ,QSortFilterProxyModel, QModelIndex
+from PySide6.QtCore import Qt ,QSortFilterProxyModel
 from PySide6.QtWidgets import QWidget, QMenu
 from amazon_order_ui import Ui_Form
 from orderForm import orderForm

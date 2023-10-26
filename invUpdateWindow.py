@@ -20,30 +20,37 @@ class Worker(QObject):
 
         self.task.emit('Updating AL inventory')
         InvUpdateWindow.update_AL(self)
+        self.update_history.loc[self.update_history['Initial']=='AL', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(10)
 
         self.task.emit('Updating VF inventory')
         InvUpdateWindow.update_VF(self)
+        self.update_history.loc[self.update_history['Initial']=='VF', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(15)
 
         self.task.emit('Updating BY inventory')
         InvUpdateWindow.update_BY(self)
+        self.update_history.loc[self.update_history['Initial']=='BY', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(20)
 
         self.task.emit('Updating NBF inventory')
         InvUpdateWindow.update_NBF(self)
+        self.update_history.loc[self.update_history['Initial']=='NBF', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(25)
 
         self.task.emit('Updating OUTRE inventory')
         InvUpdateWindow.update_OUTRE(self)
+        self.update_history.loc[self.update_history['Initial']=='OUTRE', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(30)
 
         self.task.emit('Updating HZ inventory')
         InvUpdateWindow.update_HZ(self)
+        self.update_history.loc[self.update_history['Initial']=='HZ', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(35)
 
         self.task.emit('Updating SNG inventory')
         InvUpdateWindow.update_SNG(self)
+        self.update_history.loc[self.update_history['Initial']=='SNG', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(40)
 
         self.task.emit('Updating backorded items')
@@ -186,11 +193,9 @@ class InvUpdateWindow(QWidget):
         # reset index
         self.all_upc_inv = self.all_upc_inv.reset_index(drop=True)
 
-        self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
+        # self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
         
         # QMessageBox.information(self, "Info", "Updated")
-
-        # self.button_AL.setDisabled(True)
 
     def update_VF(self):
         # load new inv data
@@ -243,10 +248,8 @@ class InvUpdateWindow(QWidget):
         # reset index
         self.all_upc_inv = self.all_upc_inv.reset_index(drop=True)
 
-        self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
-
+        # self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
         # QMessageBox.information(self, "Info", "Updated")
-        # self.button_VF.setDisabled(True)
 
     def update_BY(self):
         # load new inv data
@@ -296,10 +299,8 @@ class InvUpdateWindow(QWidget):
         # reset index
         self.all_upc_inv = self.all_upc_inv.reset_index(drop=True)
 
-        self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
-
+        # self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
         # QMessageBox.information(self, "Info", "Updated")
-        # self.button_BY.setDisabled(True)
 
     def update_NBF(self):
         # load new inv data
@@ -346,10 +347,8 @@ class InvUpdateWindow(QWidget):
         # reset index
         self.all_upc_inv = self.all_upc_inv.reset_index(drop=True)
 
-        self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
-
+        # self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
         # QMessageBox.information(self, "Info", "Updated")
-        # self.button_NBF.setDisabled(True)
 
     def update_OUTRE(self):
         # load new inv data
@@ -400,10 +399,8 @@ class InvUpdateWindow(QWidget):
         # reset index
         self.all_upc_inv = self.all_upc_inv.reset_index(drop=True)
 
-        self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
-
+        # self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
         # QMessageBox.information(self, "Info", "Updated")
-        # self.button_OUTRE.setDisabled(True)
 
     def update_HZ(self):
         # load new inv data
@@ -455,10 +452,8 @@ class InvUpdateWindow(QWidget):
         # reset index
         self.all_upc_inv = self.all_upc_inv.reset_index(drop=True)
 
-        self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
-
+        # self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
         # QMessageBox.information(self, "Info", "Updated")
-        # self.button_HZ.setDisabled(True)
 
     def update_SNG(self):
         # load new inv data
@@ -506,10 +501,8 @@ class InvUpdateWindow(QWidget):
         # reset index
         self.all_upc_inv = self.all_upc_inv.reset_index(drop=True)
 
-        self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
-
+        # self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
         # QMessageBox.information(self, "Info", "Updated")
-        # self.button_SNG.setDisabled(True)
 
     def update_backord(self):
         # filename = QFileDialog.getOpenFileName(self, "Select File backorded_list", "./", "Any Files (*)")
@@ -568,8 +561,7 @@ class InvUpdateWindow(QWidget):
         comp_inv_data['Item Lookup Code'] = comp_inv_data['Item Lookup Code'].astype(str)
 
         if len(fromPOS.merge(comp_inv_data, how='left', on='Item Lookup Code')) != len(fromPOS):
-            print('check duplicate UPC (POS - all_upc_inv)')
-
+            print('\033[31m'+'check duplicate UPC (POS - all_upc_inv)'+'\033[0m')
         fromPOS[column_name[4]] = fromPOS.merge(comp_inv_data, how='left', on='Item Lookup Code')['company Inventory']
 
         fromPOS[column_name[4]].fillna(0, inplace=True)
@@ -598,7 +590,7 @@ class InvUpdateWindow(QWidget):
 
 
         if len(all_amazon.merge(comp_inv_data, how='left', on='product-id')) != len(all_amazon):
-            print('check duplicate UPC (all_amazon - all_upc_inv)')
+            print('\033[31m'+'check duplicate UPC (all_amazon - all_upc_inv)'+'\033[0m')
         
         all_amazon['inv_comp'] = all_amazon.merge(comp_inv_data, how='left', on='product-id')['company Inventory']
 
