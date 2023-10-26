@@ -1,17 +1,31 @@
 from PySide6.QtCore import QObject, QThread, Signal
 from PySide6.QtWidgets import QWidget, QMessageBox
+from sp_api.api import Reports
+from sp_api.base.reportTypes import ReportType
 import pandas as pd
 import datetime
 import webbrowser
 from inventoryUpdate_ui import Ui_Form
+
 
 class Worker(QObject):
     finished = Signal()
     task = Signal(str)
     progress = Signal(int)
 
+    credentials = {
+        'lwa_app_id':'amzn1.application-oa2-client.be202fb014634b3e8b6e909c47d67351',
+        'lwa_client_secret':'amzn1.oa2-cs.v1.7a22ce289f8bd8e18b1d502f9c0344aeab609d3c3a299789488d5380a6005987'
+    }
+    refresh_token = 'Atzr|IwEBIAmRNBRNXoSo8oO2CNDzi_Ce5xcNiEe5Dmh3kGPqIGSAUosg4A6q1SqSlNBKea3EMs1AbD1lbsByvgdFT38ZRwAwe8tfPXV3NEJB5m7PL9lIoiIet9-wEr8BT-6iprdRd9Tf-a-V1qgyDHb01Ky2LSSfJpjwYtK-p1MSetyvSNbgvDgl-0pblmLmNnf3jjB-29kePyeH-gRwiuqMRaEdXaT2i6qveZeLy4KVbboGw047-3GXPbOIryQSzDh5mkmiZJydu4kB6g55NzEZnGfdIxh6fWZVdc5nNh6tiTFx6XICfGakBAVk-E6nWkmEK_xLFJE'
+
+    createReportResponse = None
+    reportResponse = None
+    report = None
+
     def run(self):
         # InvUpdateWindow.start_update(self)
+        self.createReportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).create_report(reportType=ReportType.GET_MERCHANT_LISTINGS_ALL_DATA)
         self.update_history = pd.read_excel('appdata/update_history.xlsx')
 
         self.task.emit('Loading all_upc_inv')
@@ -64,6 +78,11 @@ class Worker(QObject):
         self.task.emit('Updating POS inventory')
         InvUpdateWindow.update_POS(self)
         self.progress.emit(55)
+
+        self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
+        f = open("inv_data\Amazon_All+Listings+Report.txt", "w")
+        Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report_document(self.reportResponse.payload['reportDocumentId'], file=f)
+        f.close()
 
         self.task.emit('Updating Updating Amazon List')
         InvUpdateWindow.update_amazon(self)
@@ -577,6 +596,10 @@ class InvUpdateWindow(QWidget):
         # filename = QFileDialog.getOpenFileName(self, "Select File Amazon All List Report", "./", "Any Files (*)")
         # all_amazon = pd.read_csv(filename[0], sep='\t')
         all_amazon = pd.read_csv('inv_data\Amazon_All+Listings+Report.txt', sep='\t')
+        all_amazon = all_amazon[['seller-sku', 'asin1', 'item-name', 'item-description', 'listing-id',
+       'price', 'quantity', 'open-date', 'product-id-type', 'item-note',
+       'item-condition', 'will-ship-internationally', 'expedited-shipping',
+       'product-id', 'pending-quantity', 'fulfillment-channel', 'status']]
         all_amazon['product-id'] = all_amazon['product-id'].astype(str)
         all_amazon['inv_Sum'] = 0
         all_amazon['inv_comp'] = 0

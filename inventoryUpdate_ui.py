@@ -155,16 +155,11 @@ class Ui_Form(object):
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(-1, -1, -1, 140)
+        self.verticalLayout_4.setContentsMargins(-1, -1, -1, 172)
         self.checkBox_11 = QCheckBox(Form)
         self.checkBox_11.setObjectName(u"checkBox_11")
 
         self.verticalLayout_4.addWidget(self.checkBox_11)
-
-        self.checkBox_9 = QCheckBox(Form)
-        self.checkBox_9.setObjectName(u"checkBox_9")
-
-        self.verticalLayout_4.addWidget(self.checkBox_9)
 
         self.checkBox_10 = QCheckBox(Form)
         self.checkBox_10.setObjectName(u"checkBox_10")
@@ -220,7 +215,6 @@ class Ui_Form(object):
         self.pushButton_SNG.setText(QCoreApplication.translate("Form", u"SNG(Gmail)", None))
         self.pushButton_bord.setText(QCoreApplication.translate("Form", u"Backorder List", None))
         self.checkBox_11.setText(QCoreApplication.translate("Form", u"POS Inventory", None))
-        self.checkBox_9.setText(QCoreApplication.translate("Form", u"Amazon All List", None))
         self.checkBox_10.setText(QCoreApplication.translate("Form", u"Amazon Unshipped", None))
         self.pushButton.setText(QCoreApplication.translate("Form", u"Close", None))
         self.label_2.setText(QCoreApplication.translate("Form", u"Inventory Data Check List (Prepare before start update)", None))
