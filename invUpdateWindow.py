@@ -9,6 +9,7 @@ from inventoryUpdate_ui import Ui_Form
 from time import sleep
 
 root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = ''
 
 class Worker(QObject):
     finished = Signal()
@@ -85,7 +86,7 @@ class Worker(QObject):
         while('reportDocumentId' not in self.reportResponse.payload):
             sleep(2)
             self.reportResponse = self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
-        f = open(root_path+"inv_data\Amazon_All+Listings+Report.txt", "w")
+        f = open(root_path+"inv_data\Amazon_All+Listings+Report.txt", "w", encoding='utf-8')
         Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report_document(self.reportResponse.payload['reportDocumentId'], file=f)
         f.close()
 
