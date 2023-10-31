@@ -1,9 +1,11 @@
 import pandas as pd
-from PySide6.QtCore import QAbstractTableModel, Qt
+from PySide6.QtCore import QAbstractTableModel, Qt, Signal
 from PySide6.QtGui import QColor
 
 
 class PandasModel(QAbstractTableModel):
+    datamodified = Signal()
+
     def __init__(self, data:pd.DataFrame):
         super(PandasModel, self).__init__()
         self._data = data
@@ -41,6 +43,8 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.EditRole:
             # Set the value into the frame.
             self._data.iloc[index.row(), index.column()] = value
+            # print('datamodified!')
+            self.datamodified.emit()
             return True
 
         return False

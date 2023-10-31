@@ -55,6 +55,13 @@ class AmazonOrderWindow(QWidget):
         self.ui.tabWidget.tabBarClicked.connect(self.refresh_table)
         self.ui.tableView_3.customContextMenuRequested.connect(self.table3_context_menu)
 
+        self.model_preshipped.datamodified.connect(self.save_preshipped)
+        
+
+    def save_preshipped(self):
+        # print('saved')
+        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
+
     def table_context_menu(self, point):
         point.setX(point.x()+30)
         point.setY(point.y()+104)
@@ -92,6 +99,7 @@ class AmazonOrderWindow(QWidget):
         c = self.ui.tableView_3.currentIndex().column()
         self.model_preshipped._data.drop(r, inplace=True)
         self.model_preshipped = PandasModel(self.model_preshipped._data)
+        self.model_preshipped.datamodified.connect(self.save_preshipped)
         self.proxymodel_preshipped = QSortFilterProxyModel()
         self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
         self.ui.tableView_3.setModel(self.proxymodel_preshipped)
@@ -99,6 +107,7 @@ class AmazonOrderWindow(QWidget):
         
     def refresh_table(self):
         self.model_preshipped = PandasModel(self.model_preshipped._data)
+        self.model_preshipped.datamodified.connect(self.save_preshipped)
         self.proxymodel_preshipped = QSortFilterProxyModel()
         self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
         self.ui.tableView_3.setModel(self.proxymodel_preshipped)
