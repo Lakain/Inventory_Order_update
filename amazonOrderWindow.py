@@ -7,7 +7,8 @@ import pandas as pd
 import datetime
 import webbrowser
 
-root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class AmazonOrderWindow(QWidget):
     def __init__(self):
@@ -55,18 +56,20 @@ class AmazonOrderWindow(QWidget):
         self.ui.tableView_3.customContextMenuRequested.connect(self.table3_context_menu)
 
     def table_context_menu(self, point):
-        point.setX(point.x()+253)
-        point.setY(point.y()+164)
+        point.setX(point.x()+30)
+        point.setY(point.y()+104)
         self.context_menu = QMenu()
 
         add_list = self.context_menu.addAction('Add to preshipped list')
         add_list.triggered.connect(self.add_to_preshipped)
+        add_list2 = self.context_menu.addAction('Add to order list')
+        add_list2.triggered.connect(self.add_button_clicked)
 
         self.context_menu.exec(point)
 
     def table3_context_menu(self, point):
-        point.setX(point.x()+253)
-        point.setY(point.y()+164)
+        point.setX(point.x()+30)
+        point.setY(point.y()+104)
         self.context_menu = QMenu()
 
         add_list = self.context_menu.addAction('Delete')

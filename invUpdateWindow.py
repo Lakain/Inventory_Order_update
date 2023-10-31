@@ -253,6 +253,7 @@ class InvUpdateWindow(QWidget):
         new_inv.insert(0, 'Company', comp_name)
 
         # cast data float to int
+        new_inv.loc[new_inv[itemlookupcode].str.isnumeric()==False, 'Barcode'] = pd.NA
         new_inv[itemlookupcode]=pd.to_numeric(new_inv[itemlookupcode], downcast='integer')
 
         # rename columns
@@ -561,16 +562,16 @@ class InvUpdateWindow(QWidget):
         # save column name for future use
         column_name = fromPOS.columns
 
-        fromPOS['Display'].replace(regex=['\(.\)'], value='', inplace=True)
+        # fromPOS['Display'].replace(regex=['\(.\)'], value='', inplace=True)
 
-        fromPOS['Display'] = fromPOS['Display'].str.strip()
+        # fromPOS['Display'] = fromPOS['Display'].str.strip()
 
         fromPOS['Display'].fillna('0', inplace=True)
 
         fromPOS.loc[fromPOS['Display'].str.startswith('0'), 'Display'] = '0'
-        fromPOS.loc[fromPOS['Display'].str.startswith('S'), 'Display'] = '0'
-        fromPOS.loc[fromPOS['Display'].str.startswith('C'), 'Display'] = '0'
-        fromPOS.loc[fromPOS['Display']=='', 'Display'] = '0'
+        fromPOS.loc[fromPOS['Display'].str.startswith('1'), 'Display'] = '1'
+        # fromPOS.loc[fromPOS['Display'].str.startswith('C'), 'Display'] = '0'
+        # fromPOS.loc[fromPOS['Display']=='', 'Display'] = '0'
 
         fromPOS['Display'] = fromPOS['Display'].astype(int)
 
