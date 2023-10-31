@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
 
     def button_2_clicked(self):
         self.w2 = AmazonOrderWindow()
-        self.w2.show()
+        self.w2.showMaximized()
 
 if __name__ == '__main__':
     app = QApplication()

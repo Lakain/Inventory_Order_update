@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt ,QSortFilterProxyModel, QModelIndex
+from PySide6.QtCore import Qt ,QSortFilterProxyModel
 from PySide6.QtWidgets import QWidget, QMenu
 from amazon_order_ui import Ui_Form
 from orderForm import orderForm
@@ -7,6 +7,8 @@ import pandas as pd
 import datetime
 import webbrowser
 
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class AmazonOrderWindow(QWidget):
     def __init__(self):
@@ -14,21 +16,21 @@ class AmazonOrderWindow(QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
-        df = pd.read_csv('amazon_order'+datetime.date.today().strftime("%m%d%y")+'.csv', dtype=str)
+        df = pd.read_csv(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.csv', dtype=str)
         self.model = PandasModel(df)
         self.proxymodel = QSortFilterProxyModel()
         self.proxymodel.setSourceModel(self.model)
         self.proxymodel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.ui.tableView.setModel(self.proxymodel)
 
-        df_history = pd.read_excel('appdata/order_history.xlsx')
+        df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
         self.model_history = PandasModel(df_history)
         self.proxymodel_history = QSortFilterProxyModel()
         self.proxymodel_history.setSourceModel(self.model_history)
         self.ui.tableView_2.setModel(self.proxymodel_history)
         self.proxymodel_history.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
-        preshipped = pd.read_excel('appdata/preshipped.xlsx', dtype=str)
+        preshipped = pd.read_excel(root_path+'appdata/preshipped.xlsx', dtype=str)
         preshipped.fillna('', inplace=True)
         self.model_preshipped = PandasModel(preshipped)
         self.proxymodel_preshipped = QSortFilterProxyModel()
@@ -54,18 +56,20 @@ class AmazonOrderWindow(QWidget):
         self.ui.tableView_3.customContextMenuRequested.connect(self.table3_context_menu)
 
     def table_context_menu(self, point):
-        point.setX(point.x()+253)
-        point.setY(point.y()+164)
+        point.setX(point.x()+30)
+        point.setY(point.y()+104)
         self.context_menu = QMenu()
 
         add_list = self.context_menu.addAction('Add to preshipped list')
         add_list.triggered.connect(self.add_to_preshipped)
+        add_list2 = self.context_menu.addAction('Add to order list')
+        add_list2.triggered.connect(self.add_button_clicked)
 
         self.context_menu.exec(point)
 
     def table3_context_menu(self, point):
-        point.setX(point.x()+253)
-        point.setY(point.y()+164)
+        point.setX(point.x()+30)
+        point.setY(point.y()+104)
         self.context_menu = QMenu()
 
         add_list = self.context_menu.addAction('Delete')
@@ -81,7 +85,7 @@ class AmazonOrderWindow(QWidget):
         memo = ''
         # print(r, c)
         self.model_preshipped._data = pd.concat([self.model_preshipped._data, pd.Series([order_id, sku, memo], index=self.model_preshipped._data.columns).to_frame().T], ignore_index=True)
-        self.model_preshipped._data.to_excel('appdata/preshipped.xlsx', index=False, engine='openpyxl')
+        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
 
     def delete_preshipped(self):
         r = self.ui.tableView_3.currentIndex().row()
@@ -91,7 +95,7 @@ class AmazonOrderWindow(QWidget):
         self.proxymodel_preshipped = QSortFilterProxyModel()
         self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
         self.ui.tableView_3.setModel(self.proxymodel_preshipped)
-        self.model_preshipped._data.to_excel('appdata/preshipped.xlsx', index=False, engine='openpyxl')
+        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
         
     def refresh_table(self):
         self.model_preshipped = PandasModel(self.model_preshipped._data)
@@ -141,7 +145,7 @@ class AmazonOrderWindow(QWidget):
         # QMessageBox.information(self, "Info", str(order_list))
 
     def refresh_button_clicked(self):
-        df_history = pd.read_excel('appdata/order_history.xlsx')
+        df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
         self.model_history = PandasModel(df_history)
         self.proxymodel_history = QSortFilterProxyModel()
         self.proxymodel_history.setSourceModel(self.model_history)

@@ -213,19 +213,12 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <property name="bottomMargin">
-        <number>140</number>
+        <number>172</number>
        </property>
        <item>
         <widget class="QCheckBox" name="checkBox_11">
          <property name="text">
           <string>POS Inventory</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkBox_9">
-         <property name="text">
-          <string>Amazon All List</string>
          </property>
         </widget>
        </item>
