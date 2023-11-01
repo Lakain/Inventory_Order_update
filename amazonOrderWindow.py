@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt ,QSortFilterProxyModel
-from PySide6.QtWidgets import QWidget, QMenu
+from PySide6.QtGui import QKeySequence
+from PySide6.QtWidgets import QWidget, QMenu, QApplication
 from amazon_order_ui import Ui_Form
 from orderForm import orderForm
 from pandasModel import PandasModel
@@ -16,7 +17,7 @@ class AmazonOrderWindow(QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
-        df = pd.read_csv(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.csv', dtype=str)
+        df = pd.read_excel(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', dtype=str)
         self.model = PandasModel(df)
         self.proxymodel = QSortFilterProxyModel()
         self.proxymodel.setSourceModel(self.model)
@@ -57,6 +58,22 @@ class AmazonOrderWindow(QWidget):
 
         self.model_preshipped.datamodified.connect(self.save_preshipped)
         
+    def keyPressEvent(self, event) -> None:
+        if event.matches(QKeySequence.StandardKey.Copy):
+            values = []
+            row_index = self.ui.tableView.selectedIndexes()[0].row()
+            for item in self.ui.tableView.selectedIndexes():             
+                if row_index!=item.row():
+                    values.append('\n'+item.data())
+                    row_index = item.row()
+                else:
+                    if values==[]:
+                        values.append(item.data())
+                    else:
+                        values.append('\t'+item.data())
+            QApplication.clipboard().setText(''.join(values))
+            return
+        super().keyPressEvent(event)
 
     def save_preshipped(self):
         # print('saved')

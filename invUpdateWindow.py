@@ -683,7 +683,7 @@ class InvUpdateWindow(QWidget):
         self.all_upc_inv.to_excel(root_path+"appdata/all_upc_inv_backup.xlsx", index=False)
         self.fromPOS.to_csv(root_path+'fromPOS'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
         # self.all_amazon.to_csv('all_amazon'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
-        self.amazon_order.to_csv(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
+        self.amazon_order.to_excel(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', index=False, freeze_panes=(1,0))
         # self.update_history.to_excel('appdata/update_history.xlsx', index=False)
         self.update_history = pd.read_excel(root_path+'appdata/update_history.xlsx')
 
@@ -691,5 +691,6 @@ class InvUpdateWindow(QWidget):
             self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False, freeze_panes=(3,1))
             self.amazon_order.to_excel(writer, sheet_name='order', index=False, freeze_panes=(1,0))
             self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
+            # self.fromPOS.style.set_properties(format="Comma").to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
             self.all_upc_inv.to_excel(writer, sheet_name='all_upc_inv', index=False, freeze_panes=(1,0))
             self.update_history.to_excel(writer, sheet_name='update_history', index=False)
