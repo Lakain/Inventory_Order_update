@@ -8,8 +8,8 @@ import pandas as pd
 import datetime
 import webbrowser
 
-# root_path = "Z:/excel files/00 RMH Sale report/"
-root_path = ''
+root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = ''
 
 class AmazonOrderWindow(QWidget):
     def __init__(self):

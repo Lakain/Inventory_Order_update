@@ -8,8 +8,8 @@ import webbrowser
 from inventoryUpdate_ui import Ui_Form
 from time import sleep
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class Worker(QObject):
     finished = Signal()
@@ -98,14 +98,14 @@ class Worker(QObject):
         InvUpdateWindow.update_amazon_ord(self)
         self.progress.emit(65)
 
+        self.update_history.to_excel(root_path+'appdata/update_history.xlsx', index=False)
+
         self.task.emit('Saving inventory data')
         InvUpdateWindow.save_data(self)
         self.progress.emit(100)
 
         self.task.emit('Done!')
         self.finished.emit()
-
-        self.update_history.to_excel(root_path+'appdata/update_history.xlsx', index=False)
 
 class InvUpdateWindow(QWidget):
     def __init__(self):
