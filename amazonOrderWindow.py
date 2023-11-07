@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt ,QSortFilterProxyModel
-from PySide6.QtWidgets import QWidget, QMenu
+from PySide6.QtGui import QKeySequence
+from PySide6.QtWidgets import QWidget, QMenu, QApplication
 from amazon_order_ui import Ui_Form
 from orderForm import orderForm
 from pandasModel import PandasModel
@@ -7,8 +8,8 @@ import pandas as pd
 import datetime
 import webbrowser
 
-# root_path = "Z:/excel files/00 RMH Sale report/"
-root_path = ''
+root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = ''
 
 class AmazonOrderWindow(QWidget):
     def __init__(self):
@@ -16,7 +17,7 @@ class AmazonOrderWindow(QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
-        df = pd.read_csv(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.csv', dtype=str)
+        df = pd.read_excel(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', dtype=str)
         self.model = PandasModel(df)
         self.proxymodel = QSortFilterProxyModel()
         self.proxymodel.setSourceModel(self.model)
@@ -55,6 +56,29 @@ class AmazonOrderWindow(QWidget):
         self.ui.tabWidget.tabBarClicked.connect(self.refresh_table)
         self.ui.tableView_3.customContextMenuRequested.connect(self.table3_context_menu)
 
+        self.model_preshipped.datamodified.connect(self.save_preshipped)
+        
+    def keyPressEvent(self, event) -> None:
+        if event.matches(QKeySequence.StandardKey.Copy):
+            values = []
+            row_index = self.ui.tableView.selectedIndexes()[0].row()
+            for item in self.ui.tableView.selectedIndexes():             
+                if row_index!=item.row():
+                    values.append('\n'+item.data())
+                    row_index = item.row()
+                else:
+                    if values==[]:
+                        values.append(item.data())
+                    else:
+                        values.append('\t'+item.data())
+            QApplication.clipboard().setText(''.join(values))
+            return
+        super().keyPressEvent(event)
+
+    def save_preshipped(self):
+        # print('saved')
+        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
+
     def table_context_menu(self, point):
         point.setX(point.x()+30)
         point.setY(point.y()+104)
@@ -92,6 +116,7 @@ class AmazonOrderWindow(QWidget):
         c = self.ui.tableView_3.currentIndex().column()
         self.model_preshipped._data.drop(r, inplace=True)
         self.model_preshipped = PandasModel(self.model_preshipped._data)
+        self.model_preshipped.datamodified.connect(self.save_preshipped)
         self.proxymodel_preshipped = QSortFilterProxyModel()
         self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
         self.ui.tableView_3.setModel(self.proxymodel_preshipped)
@@ -99,6 +124,7 @@ class AmazonOrderWindow(QWidget):
         
     def refresh_table(self):
         self.model_preshipped = PandasModel(self.model_preshipped._data)
+        self.model_preshipped.datamodified.connect(self.save_preshipped)
         self.proxymodel_preshipped = QSortFilterProxyModel()
         self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
         self.ui.tableView_3.setModel(self.proxymodel_preshipped)
