@@ -3,24 +3,22 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 from sp_api.api import Reports
 from sp_api.base.reportTypes import ReportType
 import pandas as pd
-import datetime
-import webbrowser
+import datetime, json, webbrowser
 from inventoryUpdate_ui import Ui_Form
 from time import sleep
 
-# root_path = "Z:/excel files/00 RMH Sale report/"
-root_path = ''
+root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = ''
 
 class Worker(QObject):
     finished = Signal()
     task = Signal(str)
     progress = Signal(int)
 
-    credentials = {
-        'lwa_app_id':'amzn1.application-oa2-client.be202fb014634b3e8b6e909c47d67351',
-        'lwa_client_secret':'amzn1.oa2-cs.v1.7a22ce289f8bd8e18b1d502f9c0344aeab609d3c3a299789488d5380a6005987'
-    }
-    refresh_token = 'Atzr|IwEBIAmRNBRNXoSo8oO2CNDzi_Ce5xcNiEe5Dmh3kGPqIGSAUosg4A6q1SqSlNBKea3EMs1AbD1lbsByvgdFT38ZRwAwe8tfPXV3NEJB5m7PL9lIoiIet9-wEr8BT-6iprdRd9Tf-a-V1qgyDHb01Ky2LSSfJpjwYtK-p1MSetyvSNbgvDgl-0pblmLmNnf3jjB-29kePyeH-gRwiuqMRaEdXaT2i6qveZeLy4KVbboGw047-3GXPbOIryQSzDh5mkmiZJydu4kB6g55NzEZnGfdIxh6fWZVdc5nNh6tiTFx6XICfGakBAVk-E6nWkmEK_xLFJE'
+    with open(root_path+'appdata/api_keys.json') as f:
+        temp = json.load(f)
+        credentials = temp['credentials']
+        refresh_token = temp['refresh_token']
 
     createReportResponse = None
     reportResponse = None
@@ -150,7 +148,7 @@ class InvUpdateWindow(QWidget):
         self.thread.finished.connect(lambda: self.ui.pushButton.setEnabled(True))
         self.thread.finished.connect(lambda: self.ui.pushButton_2.setEnabled(True))
         self.thread.finished.connect(lambda: QMessageBox.information(self, "Info", "Update Finished"))
-        
+
     def load_all_upc_inv(self):
         # all upc inv import
         # filename = QFileDialog.getOpenFileName(self, "Select File", "./", "Any Files (*)")
