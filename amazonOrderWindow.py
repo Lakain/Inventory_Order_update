@@ -62,7 +62,7 @@ class AmazonOrderWindow(QWidget):
         if event.matches(QKeySequence.StandardKey.Copy):
             values = []
             row_index = self.ui.tableView.selectedIndexes()[0].row()
-            for item in self.ui.tableView.selectedIndexes():             
+            for item in self.ui.tableView.selectedIndexes():
                 if row_index!=item.row():
                     values.append('\n'+item.data())
                     row_index = item.row()
@@ -152,8 +152,11 @@ class AmazonOrderWindow(QWidget):
         # QMessageBox.information(self, "Info", self.ui.lineEdit.text())
 
     def add_button_clicked(self):
-        if self.ui.tableView.currentIndex().column()==2:
-            self.ui.listWidget.addItem(self.ui.tableView.model().data(self.ui.tableView.currentIndex()))
+        for item in self.ui.tableView.selectedIndexes():
+            if item.column()==2:
+                self.ui.listWidget.addItem(item.data())
+        # if self.ui.tableView.currentIndex().column()==2:
+        #     self.ui.listWidget.addItem(self.ui.tableView.model().data(self.ui.tableView.currentIndex()))
             # self.ui.listWidget.addItem(self.ui.tableView.selectedIndexes)
         # QMessageBox.information(self, "Info", "Add")
 

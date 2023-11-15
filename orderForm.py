@@ -33,5 +33,5 @@ class orderForm(QWidget):
         history.to_excel(root_path+'appdata/order_history.xlsx', index=False)
         print(history)
         self.model._data.style.set_properties(border="thin solid black").to_excel(root_path+'appdata/orderForm.xlsx', index=False, engine='openpyxl')
-        # os.system('"'+os.getcwd()+'/appdata/orderForm.xlsx"')
         os.system('"'+root_path+'/appdata/orderForm.xlsx"')
+        # os.system('"'+os.getcwd()+'/appdata/orderForm.xlsx"')
