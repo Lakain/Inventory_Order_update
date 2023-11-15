@@ -378,7 +378,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File SUN TAIYANG (OUTRE)", "./", "Any Files (*)")
         # new_inv = pd.read_csv(filename[0], sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1)
-        new_inv = pd.read_csv(root_path+'inv_data\OUTRE_StockAvailability.csv', sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1)
+        new_inv = pd.read_csv(root_path+'inv_data\OUTRE_StockAvailability.csv', sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1, engine='python')
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -430,7 +430,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File SENSATIONNEL (HZ)", "./", "Any Files (*)")
         # new_inv = pd.read_csv(filename[0], sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1)
-        new_inv = pd.read_csv(root_path+'inv_data\HZ_StockAvailability.csv', sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1)
+        new_inv = pd.read_csv(root_path+'inv_data\HZ_StockAvailability.csv', sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1, engine='python')
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
