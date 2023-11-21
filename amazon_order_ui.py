@@ -91,6 +91,7 @@ class Ui_Form(object):
         self.tableView_2 = QTableView(Form)
         self.tableView_2.setObjectName(u"tableView_2")
         self.tableView_2.setMinimumSize(QSize(300, 0))
+        self.tableView_2.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tableView_2.setSortingEnabled(True)
         self.tableView_2.horizontalHeader().setMinimumSectionSize(37)
         self.tableView_2.horizontalHeader().setDefaultSectionSize(80)

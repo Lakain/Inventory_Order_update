@@ -7,8 +7,8 @@ import datetime, json, webbrowser
 from inventoryUpdate_ui import Ui_Form
 from time import sleep
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class Worker(QObject):
     finished = Signal()
