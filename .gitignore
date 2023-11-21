@@ -1,2 +1,7 @@
 
 api_keys.json
+__pycache__/
+appdata/
+inv_data/
+*.xlsx
+*.csv

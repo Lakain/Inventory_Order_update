@@ -8,8 +8,8 @@ import pandas as pd
 import datetime
 import webbrowser
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class AmazonOrderWindow(QWidget):
     def __init__(self):
@@ -54,10 +54,34 @@ class AmazonOrderWindow(QWidget):
 
         self.ui.tableView.customContextMenuRequested.connect(self.table_context_menu)
         self.ui.tabWidget.tabBarClicked.connect(self.refresh_table)
+        self.ui.tableView_2.customContextMenuRequested.connect(self.table2_context_menu)
         self.ui.tableView_3.customContextMenuRequested.connect(self.table3_context_menu)
 
         self.model_preshipped.datamodified.connect(self.save_preshipped)
+
+
+    # Delete order history
+    def delete_history(self):
+        rows = []
+        for item in self.ui.tableView_2.selectedIndexes():
+            if item.row() not in rows:
+                rows.append(item.row())
+        print(rows)
+
+        self.model_history._data.drop(rows, inplace=True)
+        self.model_history._data.to_excel(root_path+'appdata/order_history.xlsx', index=False)
         
+        self.refresh_button_clicked()
+
+        # self.model_preshipped._data.drop(r, inplace=True)
+        # self.model_preshipped = PandasModel(self.model_preshipped._data)
+        # self.model_preshipped.datamodified.connect(self.save_preshipped)
+        # self.proxymodel_preshipped = QSortFilterProxyModel()
+        # self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
+        # self.ui.tableView_3.setModel(self.proxymodel_preshipped)
+        # self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
+
+    # Ctrl + C -> Copy function implement.
     def keyPressEvent(self, event) -> None:
         if event.matches(QKeySequence.StandardKey.Copy):
             values = []
@@ -75,13 +99,14 @@ class AmazonOrderWindow(QWidget):
             return
         super().keyPressEvent(event)
 
+    # Save preshipped data to excel file.
     def save_preshipped(self):
         # print('saved')
         self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
 
     def table_context_menu(self, point):
-        point.setX(point.x()+30)
-        point.setY(point.y()+104)
+        point.setX(self.x() + self.ui.tableView.x() + point.x() + 30)
+        point.setY(self.y() + self.ui.tableView.logicalDpiY() + point.y() + 25)
         self.context_menu = QMenu()
 
         add_list = self.context_menu.addAction('Add to preshipped list')
@@ -91,15 +116,25 @@ class AmazonOrderWindow(QWidget):
 
         self.context_menu.exec(point)
 
-    def table3_context_menu(self, point):
-        point.setX(point.x()+30)
-        point.setY(point.y()+104)
-        self.context_menu = QMenu()
+    def table2_context_menu(self, point):
+        point.setX(self.x() + self.ui.tableView_2.x() + point.x() + 10)
+        point.setY(self.y() + self.ui.tableView_2.y() + point.y() + 45)
+        self.context2_menu = QMenu()
 
-        add_list = self.context_menu.addAction('Delete')
+        add_list = self.context2_menu.addAction('Delete')
+        add_list.triggered.connect(self.delete_history)
+
+        self.context2_menu.exec(point)
+    
+    def table3_context_menu(self, point):
+        point.setX(self.x() + self.ui.tableView_3.x() + point.x() + 30)
+        point.setY(self.y() + self.ui.tableView_3.logicalDpiY() + point.y() + 25)
+        self.context3_menu = QMenu()
+
+        add_list = self.context3_menu.addAction('Delete')
         add_list.triggered.connect(self.delete_preshipped)
 
-        self.context_menu.exec(point)
+        self.context3_menu.exec(point)
         
     def add_to_preshipped(self):
         r = self.ui.tableView.currentIndex().row()
@@ -179,5 +214,5 @@ class AmazonOrderWindow(QWidget):
         self.proxymodel_history = QSortFilterProxyModel()
         self.proxymodel_history.setSourceModel(self.model_history)
         self.ui.tableView_2.setModel(self.proxymodel_history)
-        self.ui.tableView_2.resizeColumnsToContents()
+        # self.ui.tableView_2.resizeColumnsToContents()
         # QMessageBox.information(self, "Info", "Refresh")

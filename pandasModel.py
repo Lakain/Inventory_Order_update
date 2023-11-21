@@ -7,7 +7,7 @@ class PandasModel(QAbstractTableModel):
     datamodified = Signal()
 
     def __init__(self, data:pd.DataFrame):
-        super(PandasModel, self).__init__()
+        super().__init__()
         self._data = data
 
     def data(self, index, role):

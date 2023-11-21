@@ -7,8 +7,8 @@ from pandasModel import PandasModel
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import  QSortFilterProxyModel
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class orderForm(QWidget):
     def __init__(self, order_list:list, df: pd.DataFrame):
@@ -16,8 +16,9 @@ class orderForm(QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         df = df[['sku','ORD', 'DESCRIPTION']]
+        df['ORD'] = pd.to_numeric(df['ORD'], downcast='integer')
 
-        self.model = PandasModel(df[df['sku'].isin(order_list)].drop_duplicates())
+        self.model = PandasModel(df[df['sku'].isin(order_list)].groupby(['sku'],as_index=False).sum())
         self.proxymodel = QSortFilterProxyModel()
         self.proxymodel.setSourceModel(self.model)
         self.ui.tableView.setModel(self.proxymodel)
