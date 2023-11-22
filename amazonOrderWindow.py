@@ -8,8 +8,8 @@ import pandas as pd
 import datetime
 import webbrowser
 
-# root_path = "Z:/excel files/00 RMH Sale report/"
-root_path = ''
+root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = ''
 
 class AmazonOrderWindow(QWidget):
     def __init__(self):
@@ -18,21 +18,25 @@ class AmazonOrderWindow(QWidget):
         self.ui.setupUi(self)
 
         df = pd.read_excel(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', dtype=str)
+        df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
+        preshipped = pd.read_excel(root_path+'appdata/preshipped.xlsx', dtype=str)
+
+        last_history = df_history.drop_duplicates('sku', keep='last')
+        df.insert(0, 'Last Order', df.merge(last_history[['sku','order date']], how='left')['order date'].fillna(''))
+        preshipped.fillna('', inplace=True)
+        
         self.model = PandasModel(df)
         self.proxymodel = QSortFilterProxyModel()
         self.proxymodel.setSourceModel(self.model)
         self.proxymodel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.ui.tableView.setModel(self.proxymodel)
 
-        df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
         self.model_history = PandasModel(df_history)
         self.proxymodel_history = QSortFilterProxyModel()
         self.proxymodel_history.setSourceModel(self.model_history)
         self.ui.tableView_2.setModel(self.proxymodel_history)
         self.proxymodel_history.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
-        preshipped = pd.read_excel(root_path+'appdata/preshipped.xlsx', dtype=str)
-        preshipped.fillna('', inplace=True)
         self.model_preshipped = PandasModel(preshipped)
         self.proxymodel_preshipped = QSortFilterProxyModel()
         self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
@@ -139,8 +143,8 @@ class AmazonOrderWindow(QWidget):
     def add_to_preshipped(self):
         r = self.ui.tableView.currentIndex().row()
         c = self.ui.tableView.currentIndex().column()
-        order_id = self.ui.tableView.model().data(self.ui.tableView.model().index(r, 9))
-        sku = self.ui.tableView.model().data(self.ui.tableView.model().index(r, 2))
+        order_id = self.ui.tableView.model().data(self.ui.tableView.model().index(r, 10))
+        sku = self.ui.tableView.model().data(self.ui.tableView.model().index(r, 3))
         memo = ''
         # print(r, c)
         self.model_preshipped._data = pd.concat([self.model_preshipped._data, pd.Series([order_id, sku, memo], index=self.model_preshipped._data.columns).to_frame().T], ignore_index=True)
@@ -173,7 +177,7 @@ class AmazonOrderWindow(QWidget):
     def table_double_clicked(self,item):
         if item.data().lower().startswith(('http://','https://')):
             webbrowser.open(item.data())
-        if item.column() == 2:
+        if item.column() == 3:
             self.proxymodel_history.setFilterKeyColumn(0)
             self.proxymodel_history.setFilterFixedString(item.data())
 
@@ -181,14 +185,14 @@ class AmazonOrderWindow(QWidget):
     def apply_button_clicked(self):
         filter_input = self.ui.lineEdit.text()
         
-        self.proxymodel.setFilterKeyColumn(2) # 'sku' column
+        self.proxymodel.setFilterKeyColumn(3) # 'sku' column
         self.proxymodel.setFilterFixedString(filter_input)
         
         # QMessageBox.information(self, "Info", self.ui.lineEdit.text())
 
     def add_button_clicked(self):
         for item in self.ui.tableView.selectedIndexes():
-            if item.column()==2:
+            if item.column()==3:
                 self.ui.listWidget.addItem(item.data())
         # if self.ui.tableView.currentIndex().column()==2:
         #     self.ui.listWidget.addItem(self.ui.tableView.model().data(self.ui.tableView.currentIndex()))
