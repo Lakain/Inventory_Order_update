@@ -651,7 +651,7 @@ class InvUpdateWindow(QWidget):
         # unshipped_data = pd.read_csv(filename[0], sep='\t', dtype={'product-id':str})
         unshipped_data = pd.read_csv(root_path+'inv_data\Amazon_unshipped_report.txt', sep='\t', dtype={'product-id':str})
 
-        all_amazon = self.all_amazon[['seller-sku', 'inv_comp', 'inv_store', 'product-id']]
+        all_amazon = self.all_amazon[['seller-sku', 'inv_comp', 'inv_store', 'product-id', 'item-name']]
 
         merged_data = unshipped_data.merge(all_amazon, how='left', left_on='sku', right_on='seller-sku')
         merged_data.drop('seller-sku', axis=1, inplace=True)
@@ -667,10 +667,11 @@ class InvUpdateWindow(QWidget):
         merged_data = merged_data.merge(all_upc_inv, how='left', left_on='product-id', right_on='UPC')
         merged_data.drop('UPC', axis=1, inplace=True)
         merged_data['ORD'] = merged_data['quantity-purchased']
-        merged_data['link'] = "https://sellercentral.amazon.com/orders-v3/order/"+merged_data['order-id']
+        # merged_data['link'] = "https://sellercentral.amazon.com/orders-v3/order/"+merged_data['order-id']
         # '''<a href='http://stackoverflow.com'>stackoverflow</a>'''
 
-        self.amazon_order = merged_data[['inv_comp','inv_store','sku','ORD','quantity-purchased', 'Bin Location', 'product-id', 'ship-service-level', 'DESCRIPTION','order-id', 'purchase-date','link']]
+        # self.amazon_order = merged_data[['inv_comp','inv_store','sku','ORD','quantity-purchased', 'Bin Location', 'product-id', 'ship-service-level', 'DESCRIPTION','order-id', 'purchase-date','link']]
+        self.amazon_order = merged_data[['inv_comp','inv_store','sku','ORD','quantity-purchased', 'Bin Location', 'product-id', 'ship-service-level', 'DESCRIPTION','order-id', 'purchase-date','item-name']]
 
         # QMessageBox.information(self, "Info", "Updated")
         # self.button_amazon_ord.setDisabled(True)
