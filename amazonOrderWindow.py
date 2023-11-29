@@ -8,8 +8,8 @@ import pandas as pd
 import datetime
 import webbrowser
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class AmazonOrderWindow(QWidget):
     def __init__(self):
@@ -70,9 +70,10 @@ class AmazonOrderWindow(QWidget):
         for item in self.ui.tableView_2.selectedIndexes():
             if item.row() not in rows:
                 rows.append(item.row())
-        print(rows)
+        # print(rows)
 
         self.model_history._data.drop(rows, inplace=True)
+        self.model_history._data.reset_index(drop=True, inplace=True)
         self.model_history._data.to_excel(root_path+'appdata/order_history.xlsx', index=False)
         
         self.refresh_button_clicked()
@@ -146,14 +147,16 @@ class AmazonOrderWindow(QWidget):
         order_id = self.ui.tableView.model().data(self.ui.tableView.model().index(r, 10))
         sku = self.ui.tableView.model().data(self.ui.tableView.model().index(r, 3))
         memo = ''
+        item_name = self.ui.tableView.model().data(self.ui.tableView.model().index(r, 12))
         # print(r, c)
-        self.model_preshipped._data = pd.concat([self.model_preshipped._data, pd.Series([order_id, sku, memo], index=self.model_preshipped._data.columns).to_frame().T], ignore_index=True)
+        self.model_preshipped._data = pd.concat([self.model_preshipped._data, pd.Series([order_id, sku, memo, item_name], index=self.model_preshipped._data.columns).to_frame().T], ignore_index=True)
         self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
 
     def delete_preshipped(self):
         r = self.ui.tableView_3.currentIndex().row()
         c = self.ui.tableView_3.currentIndex().column()
         self.model_preshipped._data.drop(r, inplace=True)
+        self.model_preshipped._data.reset_index(drop=True, inplace=True)
         self.model_preshipped = PandasModel(self.model_preshipped._data)
         self.model_preshipped.datamodified.connect(self.save_preshipped)
         self.proxymodel_preshipped = QSortFilterProxyModel()
@@ -171,15 +174,17 @@ class AmazonOrderWindow(QWidget):
         
 
     def preshipped_double_clicked(self, item):
-        if item.column() == 0:
+        if item.column() == 0: # order-id column
             webbrowser.open("https://sellercentral.amazon.com/orders-v3/order/"+item.data())
 
     def table_double_clicked(self,item):
-        if item.data().lower().startswith(('http://','https://')):
-            webbrowser.open(item.data())
-        if item.column() == 3:
+        # if item.data().lower().startswith(('http://','https://')):
+        #     webbrowser.open(item.data())
+        if item.column() == 3: # sku column
             self.proxymodel_history.setFilterKeyColumn(0)
             self.proxymodel_history.setFilterFixedString(item.data())
+        if item.column() == 10: # order-id column
+            webbrowser.open("https://sellercentral.amazon.com/orders-v3/order"+item.data())
 
 
     def apply_button_clicked(self):
