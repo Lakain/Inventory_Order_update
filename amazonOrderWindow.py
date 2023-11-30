@@ -22,7 +22,7 @@ class AmazonOrderWindow(QWidget):
         preshipped = pd.read_excel(root_path+'appdata/preshipped.xlsx', dtype=str)
 
         last_history = df_history.drop_duplicates('sku', keep='last')
-        df.insert(0, 'Last Order', df.merge(last_history[['sku','order date']], how='left')['order date'].fillna(''))
+        df.insert(0, 'Last Order', df.merge(last_history[['order-id','order date']], how='left')['order date'].fillna(''))
         preshipped.fillna('', inplace=True)
         
         self.model = PandasModel(df)

@@ -82,13 +82,13 @@ class Worker(QObject):
 
         self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
         while('reportDocumentId' not in self.reportResponse.payload):
-            sleep(2)
+            sleep(5)
             self.reportResponse = self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
         f = open(root_path+"inv_data\Amazon_All+Listings+Report.txt", "w", encoding='utf-8')
         Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report_document(self.reportResponse.payload['reportDocumentId'], file=f)
         f.close()
 
-        self.task.emit('Updating Updating Amazon List')
+        self.task.emit('Updating Amazon List')
         InvUpdateWindow.update_amazon(self)
         self.progress.emit(60)
 
@@ -686,10 +686,20 @@ class InvUpdateWindow(QWidget):
         # self.update_history.to_excel('appdata/update_history.xlsx', index=False)
         self.update_history = pd.read_excel(root_path+'appdata/update_history.xlsx')
 
-        with pd.ExcelWriter(root_path+'All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'.xlsx') as writer:
-            self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False, freeze_panes=(3,1))
-            self.amazon_order.to_excel(writer, sheet_name='order', index=False, freeze_panes=(1,0))
-            self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
-            # self.fromPOS.style.set_properties(format="Comma").to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
-            self.all_upc_inv.to_excel(writer, sheet_name='all_upc_inv', index=False, freeze_panes=(1,0))
-            self.update_history.to_excel(writer, sheet_name='update_history', index=False)
+        try:
+            with pd.ExcelWriter(root_path+'All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'.xlsx') as writer:
+                self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False, freeze_panes=(3,1))
+                self.amazon_order.to_excel(writer, sheet_name='order', index=False, freeze_panes=(1,0))
+                self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
+                # self.fromPOS.style.set_properties(format="Comma").to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
+                self.all_upc_inv.to_excel(writer, sheet_name='all_upc_inv', index=False, freeze_panes=(1,0))
+                self.update_history.to_excel(writer, sheet_name='update_history', index=False)
+        except:
+            print('\033[31m'+f'Error occured while saveing file. Save file as "All_Listings_Report_{datetime.date.today().strftime("%m_%d_%Y")}_new.xlsx"'+'\033[0m')
+            with pd.ExcelWriter(root_path+'All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'_new.xlsx') as writer:
+                self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False, freeze_panes=(3,1))
+                self.amazon_order.to_excel(writer, sheet_name='order', index=False, freeze_panes=(1,0))
+                self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
+                # self.fromPOS.style.set_properties(format="Comma").to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
+                self.all_upc_inv.to_excel(writer, sheet_name='all_upc_inv', index=False, freeze_panes=(1,0))
+                self.update_history.to_excel(writer, sheet_name='update_history', index=False)
