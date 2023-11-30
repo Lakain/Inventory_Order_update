@@ -184,7 +184,7 @@ class AmazonOrderWindow(QWidget):
             self.proxymodel_history.setFilterKeyColumn(0)
             self.proxymodel_history.setFilterFixedString(item.data())
         if item.column() == 10: # order-id column
-            webbrowser.open("https://sellercentral.amazon.com/orders-v3/order"+item.data())
+            webbrowser.open("https://sellercentral.amazon.com/orders-v3/order/"+item.data())
 
 
     def apply_button_clicked(self):
