@@ -50,6 +50,7 @@ class AmazonOrderWindow(QWidget):
         self.ui.pushButton_apply.clicked.connect(self.apply_button_clicked)
         self.ui.pushButton_add.clicked.connect(self.add_button_clicked)
         self.ui.pushButton_del.clicked.connect(self.del_button_clicked)
+        self.ui.pushButton_clr.clicked.connect(self.clr_button_clicked)
         self.ui.pushButton_create.clicked.connect(self.create_button_clicked)
         self.ui.pushButton_refresh.clicked.connect(self.refresh_button_clicked)
 
@@ -200,8 +201,8 @@ class AmazonOrderWindow(QWidget):
             if item.column()==3:
                 r = self.ui.tableWidget.rowCount()
                 self.ui.tableWidget.insertRow(r)
-                self.ui.tableWidget.setItem(r, 0, QTableWidgetItem(self.model._data.iloc[item.row(), 3]))
-                self.ui.tableWidget.setItem(r, 1, QTableWidgetItem(self.model._data.iloc[item.row(), 10]))
+                self.ui.tableWidget.setItem(r, 0, QTableWidgetItem(self.ui.tableView.model().data(self.ui.tableView.model().index(item.row(), 3))))
+                self.ui.tableWidget.setItem(r, 1, QTableWidgetItem(self.ui.tableView.model().data(self.ui.tableView.model().index(item.row(), 10))))
         # QMessageBox.information(self, "Info", "Add")
 
     def del_button_clicked(self):
@@ -213,6 +214,9 @@ class AmazonOrderWindow(QWidget):
             self.ui.tableWidget.removeRow(r)
         # QMessageBox.information(self, "Info", "Delete")
 
+    def clr_button_clicked(self):
+        for r in range(self.ui.tableWidget.rowCount()-1, -1, -1):
+            self.ui.tableWidget.removeRow(r)
 
     def create_button_clicked(self):
         order_list = []
