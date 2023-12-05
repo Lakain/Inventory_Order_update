@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt ,QSortFilterProxyModel
 from PySide6.QtGui import QKeySequence
-from PySide6.QtWidgets import QWidget, QMenu, QApplication
+from PySide6.QtWidgets import QWidget, QMenu, QApplication, QTableWidgetItem
 from amazon_order_ui import Ui_Form
 from orderForm import orderForm
 from pandasModel import PandasModel
@@ -21,8 +21,8 @@ class AmazonOrderWindow(QWidget):
         df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
         preshipped = pd.read_excel(root_path+'appdata/preshipped.xlsx', dtype=str)
 
-        last_history = df_history.drop_duplicates('sku', keep='last')
-        df.insert(0, 'Last Order', df.merge(last_history[['order-id','order date']], how='left')['order date'].fillna(''))
+        last_history = df_history.drop_duplicates(['sku','order-id'], keep='last')
+        df.insert(0, 'Last Order', df.merge(last_history[['order-id','order date','sku']], on=['order-id', 'sku'], how='left')['order date'].fillna(''))
         preshipped.fillna('', inplace=True)
         
         self.model = PandasModel(df)
@@ -198,22 +198,28 @@ class AmazonOrderWindow(QWidget):
     def add_button_clicked(self):
         for item in self.ui.tableView.selectedIndexes():
             if item.column()==3:
-                self.ui.listWidget.addItem(item.data())
-        # if self.ui.tableView.currentIndex().column()==2:
-        #     self.ui.listWidget.addItem(self.ui.tableView.model().data(self.ui.tableView.currentIndex()))
-            # self.ui.listWidget.addItem(self.ui.tableView.selectedIndexes)
+                r = self.ui.tableWidget.rowCount()
+                self.ui.tableWidget.insertRow(r)
+                self.ui.tableWidget.setItem(r, 0, QTableWidgetItem(self.model._data.iloc[item.row(), 3]))
+                self.ui.tableWidget.setItem(r, 1, QTableWidgetItem(self.model._data.iloc[item.row(), 10]))
         # QMessageBox.information(self, "Info", "Add")
 
     def del_button_clicked(self):
-        self.ui.listWidget.takeItem(self.ui.listWidget.currentRow())
+        rows = []
+        for item in self.ui.tableWidget.selectedIndexes():
+            if item.row() not in rows:
+                rows.append(item.row())
+        for r in sorted(rows, reverse=True):
+            self.ui.tableWidget.removeRow(r)
         # QMessageBox.information(self, "Info", "Delete")
 
 
     def create_button_clicked(self):
         order_list = []
-        for i in range(self.ui.listWidget.count()):
-            order_list.append(self.ui.listWidget.item(i).text())
-        self.orderForm = orderForm(order_list, self.model._data)
+        for i in range(self.ui.tableWidget.rowCount()):
+            order_list.append([self.ui.tableWidget.item(i, 0).text(), self.ui.tableWidget.item(i,1).text()])
+        order_df = pd.DataFrame(order_list,columns=['sku', 'order-id'])
+        self.orderForm = orderForm(order_df, self.model._data)
         self.orderForm.show()
         # QMessageBox.information(self, "Info", str(order_list))
 
