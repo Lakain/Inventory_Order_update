@@ -12,14 +12,15 @@ root_path = "Z:/excel files/00 RMH Sale report/"
 # root_path = ''
 
 class orderForm(QWidget):
-    def __init__(self, order_list:list, df: pd.DataFrame):
+    def __init__(self, order_df:pd.DataFrame, df: pd.DataFrame):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+        df = order_df.merge(df[['sku','ORD', 'DESCRIPTION', 'order-id']], on=['sku', 'order-id'], how='left')
         df = df[['sku','ORD', 'DESCRIPTION', 'order-id']]
         df['ORD'] = pd.to_numeric(df['ORD'], downcast='integer')
 
-        self.model = PandasModel(df[df['sku'].isin(order_list)])
+        self.model = PandasModel(df)
         self.proxymodel = QSortFilterProxyModel()
         self.proxymodel.setSourceModel(self.model)
         self.ui.tableView.setModel(self.proxymodel)
