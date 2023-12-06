@@ -8,8 +8,8 @@ import pandas as pd
 import datetime
 import webbrowser
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class AmazonOrderWindow(QWidget):
     def __init__(self):
@@ -69,8 +69,9 @@ class AmazonOrderWindow(QWidget):
     def delete_history(self):
         rows = []
         for item in self.ui.tableView_2.selectedIndexes():
-            if item.row() not in rows:
-                rows.append(item.row())
+            r = self.ui.tableView_2.model().headerData(item.row(), Qt.Vertical)
+            if int(r) not in rows:
+                rows.append(int(r))
         # print(rows)
 
         self.model_history._data.drop(rows, inplace=True)
