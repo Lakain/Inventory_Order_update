@@ -65,6 +65,23 @@ class AmazonOrderWindow(QWidget):
         self.model_preshipped.datamodified.connect(self.save_preshipped)
 
 
+    def delete_unshipped(self):
+        rows = []
+        for item in self.ui.tableView.selectedIndexes():
+            r = self.ui.tableView.model().headerData(item.row(), Qt.Vertical)
+            if int(r) not in rows:
+                rows.append(int(r))
+
+        self.model._data.drop(rows, inplace=True)
+        self.model._data.drop(columns=['Last Order']).to_excel(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', index=False)
+
+        self.model = PandasModel(self.model._data)
+        self.proxymodel = QSortFilterProxyModel()
+        self.proxymodel.setSourceModel(self.model)
+        self.proxymodel.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.ui.tableView.setModel(self.proxymodel)
+        
+
     # Delete order history
     def delete_history(self):
         rows = []
@@ -120,6 +137,8 @@ class AmazonOrderWindow(QWidget):
         add_list.triggered.connect(self.add_to_preshipped)
         add_list2 = self.context_menu.addAction('Add to order list')
         add_list2.triggered.connect(self.add_button_clicked)
+        add_list3 = self.context_menu.addAction('Delete')
+        add_list3.triggered.connect(self.delete_unshipped)
 
         self.context_menu.exec(point)
 
