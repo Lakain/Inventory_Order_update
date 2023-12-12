@@ -64,7 +64,22 @@ class AmazonOrderWindow(QWidget):
 
         self.model_preshipped.datamodified.connect(self.save_preshipped)
 
+################################################################################################
+#---------------------------- Unshipped Table(TableView_1) ------------------------------------#
+    def table_context_menu(self, point):
+        point.setX(self.x() + self.ui.tableView.x() + point.x() + 30)
+        point.setY(self.y() + self.ui.tableView.logicalDpiY() + point.y() + 25)
+        self.context_menu = QMenu()
 
+        add_list = self.context_menu.addAction('Add to preshipped list')
+        add_list.triggered.connect(self.add_to_preshipped)
+        add_list2 = self.context_menu.addAction('Add to order list')
+        add_list2.triggered.connect(self.add_button_clicked)
+        add_list3 = self.context_menu.addAction('Delete')
+        add_list3.triggered.connect(self.delete_unshipped)
+
+        self.context_menu.exec(point)
+    
     def delete_unshipped(self):
         rows = []
         for item in self.ui.tableView.selectedIndexes():
@@ -81,29 +96,6 @@ class AmazonOrderWindow(QWidget):
         self.proxymodel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.ui.tableView.setModel(self.proxymodel)
         
-
-    # Delete order history
-    def delete_history(self):
-        rows = []
-        for item in self.ui.tableView_2.selectedIndexes():
-            r = self.ui.tableView_2.model().headerData(item.row(), Qt.Vertical)
-            if int(r) not in rows:
-                rows.append(int(r))
-        # print(rows)
-
-        self.model_history._data.drop(rows, inplace=True)
-        self.model_history._data.reset_index(drop=True, inplace=True)
-        self.model_history._data.to_excel(root_path+'appdata/order_history.xlsx', index=False)
-        
-        self.refresh_button_clicked()
-
-        # self.model_preshipped._data.drop(r, inplace=True)
-        # self.model_preshipped = PandasModel(self.model_preshipped._data)
-        # self.model_preshipped.datamodified.connect(self.save_preshipped)
-        # self.proxymodel_preshipped = QSortFilterProxyModel()
-        # self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
-        # self.ui.tableView_3.setModel(self.proxymodel_preshipped)
-        # self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
 
     # Ctrl + C -> Copy function implement.
     def keyPressEvent(self, event) -> None:
@@ -123,25 +115,24 @@ class AmazonOrderWindow(QWidget):
             return
         super().keyPressEvent(event)
 
-    # Save preshipped data to excel file.
-    def save_preshipped(self):
-        # print('saved')
-        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
+    def table_double_clicked(self,item):
+        # if item.data().lower().startswith(('http://','https://')):
+        #     webbrowser.open(item.data())
+        if item.column() == 3: # sku column
+            self.proxymodel_history.setFilterKeyColumn(0)
+            self.proxymodel_history.setFilterFixedString(item.data())
+        if item.column() == 10: # order-id column
+            webbrowser.open("https://sellercentral.amazon.com/orders-v3/order/"+item.data())
 
-    def table_context_menu(self, point):
-        point.setX(self.x() + self.ui.tableView.x() + point.x() + 30)
-        point.setY(self.y() + self.ui.tableView.logicalDpiY() + point.y() + 25)
-        self.context_menu = QMenu()
 
-        add_list = self.context_menu.addAction('Add to preshipped list')
-        add_list.triggered.connect(self.add_to_preshipped)
-        add_list2 = self.context_menu.addAction('Add to order list')
-        add_list2.triggered.connect(self.add_button_clicked)
-        add_list3 = self.context_menu.addAction('Delete')
-        add_list3.triggered.connect(self.delete_unshipped)
+    def apply_button_clicked(self):
+        filter_input = self.ui.lineEdit.text()
+        
+        self.proxymodel.setFilterKeyColumn(3) # 'sku' column
+        self.proxymodel.setFilterFixedString(filter_input)
 
-        self.context_menu.exec(point)
-
+################################################################################################
+#---------------------------- History Table(TableView_2) --------------------------------------#
     def table2_context_menu(self, point):
         point.setX(self.x() + self.ui.tableView_2.x() + point.x() + 10)
         point.setY(self.y() + self.ui.tableView_2.y() + point.y() + 45)
@@ -152,6 +143,33 @@ class AmazonOrderWindow(QWidget):
 
         self.context2_menu.exec(point)
     
+
+    # Delete order history
+    def delete_history(self):
+        rows = []
+        for item in self.ui.tableView_2.selectedIndexes():
+            r = self.ui.tableView_2.model().headerData(item.row(), Qt.Vertical)
+            if int(r) not in rows:
+                rows.append(int(r))
+        # print(rows)
+
+        self.model_history._data.drop(rows, inplace=True)
+        self.model_history._data.reset_index(drop=True, inplace=True)
+        self.model_history._data.to_excel(root_path+'appdata/order_history.xlsx', index=False)
+        
+        self.refresh_button_clicked()
+
+
+    def refresh_button_clicked(self):
+        df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
+        self.model_history = PandasModel(df_history)
+        self.proxymodel_history = QSortFilterProxyModel()
+        self.proxymodel_history.setSourceModel(self.model_history)
+        self.ui.tableView_2.setModel(self.proxymodel_history)
+
+
+################################################################################################
+#---------------------------- Preshipped Table(TableView_3) -----------------------------------#
     def table3_context_menu(self, point):
         point.setX(self.x() + self.ui.tableView_3.x() + point.x() + 30)
         point.setY(self.y() + self.ui.tableView_3.logicalDpiY() + point.y() + 25)
@@ -198,24 +216,14 @@ class AmazonOrderWindow(QWidget):
         if item.column() == 0: # order-id column
             webbrowser.open("https://sellercentral.amazon.com/orders-v3/order/"+item.data())
 
-    def table_double_clicked(self,item):
-        # if item.data().lower().startswith(('http://','https://')):
-        #     webbrowser.open(item.data())
-        if item.column() == 3: # sku column
-            self.proxymodel_history.setFilterKeyColumn(0)
-            self.proxymodel_history.setFilterFixedString(item.data())
-        if item.column() == 10: # order-id column
-            webbrowser.open("https://sellercentral.amazon.com/orders-v3/order/"+item.data())
+    # Save preshipped data to excel file.
+    def save_preshipped(self):
+        # print('saved')
+        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
 
-
-    def apply_button_clicked(self):
-        filter_input = self.ui.lineEdit.text()
-        
-        self.proxymodel.setFilterKeyColumn(3) # 'sku' column
-        self.proxymodel.setFilterFixedString(filter_input)
-        
-        # QMessageBox.information(self, "Info", self.ui.lineEdit.text())
-
+    
+################################################################################################
+#---------------------------- Order Table(TableWidget) ----------------------------------------#
     def add_button_clicked(self):
         for item in self.ui.tableView.selectedIndexes():
             if item.column()==3:
@@ -223,7 +231,7 @@ class AmazonOrderWindow(QWidget):
                 self.ui.tableWidget.insertRow(r)
                 self.ui.tableWidget.setItem(r, 0, QTableWidgetItem(self.ui.tableView.model().data(self.ui.tableView.model().index(item.row(), 3))))
                 self.ui.tableWidget.setItem(r, 1, QTableWidgetItem(self.ui.tableView.model().data(self.ui.tableView.model().index(item.row(), 10))))
-        # QMessageBox.information(self, "Info", "Add")
+
 
     def del_button_clicked(self):
         rows = []
@@ -232,11 +240,12 @@ class AmazonOrderWindow(QWidget):
                 rows.append(item.row())
         for r in sorted(rows, reverse=True):
             self.ui.tableWidget.removeRow(r)
-        # QMessageBox.information(self, "Info", "Delete")
+
 
     def clr_button_clicked(self):
         for r in range(self.ui.tableWidget.rowCount()-1, -1, -1):
             self.ui.tableWidget.removeRow(r)
+
 
     def create_button_clicked(self):
         order_list = []
@@ -245,13 +254,4 @@ class AmazonOrderWindow(QWidget):
         order_df = pd.DataFrame(order_list,columns=['sku', 'order-id'])
         self.orderForm = orderForm(order_df, self.model._data)
         self.orderForm.show()
-        # QMessageBox.information(self, "Info", str(order_list))
 
-    def refresh_button_clicked(self):
-        df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
-        self.model_history = PandasModel(df_history)
-        self.proxymodel_history = QSortFilterProxyModel()
-        self.proxymodel_history.setSourceModel(self.model_history)
-        self.ui.tableView_2.setModel(self.proxymodel_history)
-        # self.ui.tableView_2.resizeColumnsToContents()
-        # QMessageBox.information(self, "Info", "Refresh")
