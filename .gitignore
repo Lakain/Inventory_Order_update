@@ -4,5 +4,6 @@ appdata/
 inv_data/
 *.xlsx
 *.csv
+*.xls
 api_keys.json
 00 RMH Sale report.zip

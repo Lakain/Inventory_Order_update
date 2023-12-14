@@ -66,6 +66,7 @@ class AmazonOrderWindow(QWidget):
 
 ################################################################################################
 #---------------------------- Unshipped Table(TableView_1) ------------------------------------#
+################################################################################################
     def table_context_menu(self, point):
         point.setX(self.x() + self.ui.tableView.x() + point.x() + 30)
         point.setY(self.y() + self.ui.tableView.logicalDpiY() + point.y() + 25)
@@ -133,6 +134,7 @@ class AmazonOrderWindow(QWidget):
 
 ################################################################################################
 #---------------------------- History Table(TableView_2) --------------------------------------#
+################################################################################################
     def table2_context_menu(self, point):
         point.setX(self.x() + self.ui.tableView_2.x() + point.x() + 10)
         point.setY(self.y() + self.ui.tableView_2.y() + point.y() + 45)
@@ -170,6 +172,7 @@ class AmazonOrderWindow(QWidget):
 
 ################################################################################################
 #---------------------------- Preshipped Table(TableView_3) -----------------------------------#
+################################################################################################
     def table3_context_menu(self, point):
         point.setX(self.x() + self.ui.tableView_3.x() + point.x() + 30)
         point.setY(self.y() + self.ui.tableView_3.logicalDpiY() + point.y() + 25)
@@ -224,6 +227,7 @@ class AmazonOrderWindow(QWidget):
     
 ################################################################################################
 #---------------------------- Order Table(TableWidget) ----------------------------------------#
+################################################################################################
     def add_button_clicked(self):
         for item in self.ui.tableView.selectedIndexes():
             if item.column()==3:

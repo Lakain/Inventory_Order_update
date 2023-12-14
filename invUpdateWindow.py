@@ -83,7 +83,7 @@ class Worker(QObject):
         self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
         while('reportDocumentId' not in self.reportResponse.payload):
             sleep(5)
-            self.reportResponse = self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
+            self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
         f = open(root_path+"inv_data\Amazon_All+Listings+Report.txt", "w", encoding='utf-8')
         Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report_document(self.reportResponse.payload['reportDocumentId'], file=f)
         f.close()
@@ -224,7 +224,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File AMEKOR (VF)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0])
-        new_inv = pd.read_excel(root_path+'inv_data\VF_Inventory.xls')
+        new_inv = pd.read_excel(root_path+'inv_data\VF_Inventory.xls', dtype={'Barcode':str})
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -247,7 +247,6 @@ class InvUpdateWindow(QWidget):
 
         # Merge needed columns
         new_inv = new_inv[[itemlookupcode, comp_inv, description, ext_desc]]
-
         new_inv.insert(0, 'Company', comp_name)
 
         # cast data float to int
