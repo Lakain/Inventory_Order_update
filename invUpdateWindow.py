@@ -6,6 +6,8 @@ import pandas as pd
 import datetime, json, webbrowser
 from inventoryUpdate_ui import Ui_Form
 from time import sleep
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 
 # root_path = "Z:/excel files/00 RMH Sale report/"
 root_path = ''
@@ -83,7 +85,7 @@ class Worker(QObject):
         self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
         while('reportDocumentId' not in self.reportResponse.payload):
             sleep(5)
-            self.reportResponse = self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
+            self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
         f = open(root_path+"inv_data\Amazon_All+Listings+Report.txt", "w", encoding='utf-8')
         Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report_document(self.reportResponse.payload['reportDocumentId'], file=f)
         f.close()
@@ -224,7 +226,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File AMEKOR (VF)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0])
-        new_inv = pd.read_excel(root_path+'inv_data\VF_Inventory.xls')
+        new_inv = pd.read_excel(root_path+'inv_data\VF_Inventory.xls', dtype={'Barcode':str})
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -247,7 +249,6 @@ class InvUpdateWindow(QWidget):
 
         # Merge needed columns
         new_inv = new_inv[[itemlookupcode, comp_inv, description, ext_desc]]
-
         new_inv.insert(0, 'Company', comp_name)
 
         # cast data float to int
@@ -553,9 +554,37 @@ class InvUpdateWindow(QWidget):
         # self.button_dup.setDisabled(True)
 
     def update_POS(self):
-        # filename = QFileDialog.getOpenFileName(self, "Select File POS", "./", "Any Files (*)")
-        # fromPOS = pd.read_excel(filename[0])
-        fromPOS = pd.read_excel(root_path+'inv_data\POS.xls')
+        with open(root_path+'appdata/db_auth.json') as f:
+            temp = json.load(f)
+            server = temp['server']
+            database = temp['database'] 
+            username = temp['username'] 
+            password = temp['password']
+
+        connection_string = 'DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password
+        connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
+
+        engine = create_engine(connection_url)
+
+        query = "SELECT ItemLookupCode, Price, Quantity, SubDescription3, SubDescription2, Description, ExtendedDescription, BinLocation, ReorderNumber, SubDescription1, dp.Name, sp.Code, sp.SupplierName\
+                FROM dbo.Item Item \
+                LEFT JOIN dbo.SupplierList sl \
+                ON Item.ID=sl.ItemID AND Item.SupplierID=sl.SupplierID\
+                LEFT JOIN dbo.Department dp\
+                ON Item.DepartmentID=dp.ID\
+                LEFT JOIN dbo.Supplier sp\
+                ON Item.SupplierID=sp.ID\
+                WHERE Item.DepartmentID IN (2, 4, 6) AND Item.Inactive = 0\
+                ORDER BY ItemLookupCode;"
+
+        with engine.connect() as conn, conn.begin():  
+            fromPOS = pd.read_sql(query, conn, dtype={'Quantity':'int64'})
+
+        fromPOS.fillna('', inplace=True)
+
+        fromPOS.columns=['Item Lookup Code', 'Price', 'Qty On Hand', 'Display', 'Comp Inv 1218',
+            'Description', 'Extended Description', 'Bin Location', 'Reorder Number',
+            'BRAND', 'Departments', 'Supplier Code', 'Supplier Name']
 
         # save column name for future use
         column_name = fromPOS.columns
