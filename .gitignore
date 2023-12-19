@@ -6,4 +6,7 @@ inv_data/
 *.csv
 *.xls
 api_keys.json
+db_auth.json
 00 RMH Sale report.zip
+Query_test.ipynb
+upc_duplicate_check.ipynb
