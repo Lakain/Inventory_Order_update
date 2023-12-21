@@ -9,8 +9,8 @@ from time import sleep
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
-# root_path = "Z:/excel files/00 RMH Sale report/"
-root_path = ''
+root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = ''
 
 class Worker(QObject):
     finished = Signal()
@@ -582,7 +582,7 @@ class InvUpdateWindow(QWidget):
 
         fromPOS.fillna('', inplace=True)
 
-        fromPOS.columns=['Item Lookup Code', 'Price', 'Qty On Hand', 'Display', 'Comp Inv 1218',
+        fromPOS.columns=['Item Lookup Code', 'Price', 'Qty On Hand', 'Display', f'Comp Inv {datetime.date.today().strftime("%m%d")}',
             'Description', 'Extended Description', 'Bin Location', 'Reorder Number',
             'BRAND', 'Departments', 'Supplier Code', 'Supplier Name']
 
@@ -593,12 +593,12 @@ class InvUpdateWindow(QWidget):
 
         # fromPOS['Display'] = fromPOS['Display'].str.strip()
 
-        fromPOS['Display'].fillna('0', inplace=True)
+        # fromPOS['Display'].fillna('0', inplace=True)
 
         fromPOS.loc[fromPOS['Display'].str.startswith('0'), 'Display'] = '0'
         fromPOS.loc[fromPOS['Display'].str.startswith('1'), 'Display'] = '1'
         # fromPOS.loc[fromPOS['Display'].str.startswith('C'), 'Display'] = '0'
-        # fromPOS.loc[fromPOS['Display']=='', 'Display'] = '0'
+        fromPOS.loc[fromPOS['Display']=='', 'Display'] = '0'
 
         fromPOS['Display'] = fromPOS['Display'].astype(int)
 
