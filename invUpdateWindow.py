@@ -9,8 +9,8 @@ from time import sleep
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class Worker(QObject):
     finished = Signal()
@@ -594,7 +594,7 @@ class InvUpdateWindow(QWidget):
         # fromPOS['Display'] = fromPOS['Display'].str.strip()
 
         # fromPOS['Display'].fillna('0', inplace=True)
-
+        fromPOS['Display'] = fromPOS['Display'].str.strip()
         fromPOS.loc[fromPOS['Display'].str.startswith('0'), 'Display'] = '0'
         fromPOS.loc[fromPOS['Display'].str.startswith('1'), 'Display'] = '1'
         # fromPOS.loc[fromPOS['Display'].str.startswith('C'), 'Display'] = '0'

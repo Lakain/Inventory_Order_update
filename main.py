@@ -9,8 +9,8 @@ from sqlalchemy.engine import URL
 import pandas as pd
 import json, datetime
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 
 class MainWindow(QMainWindow):
@@ -91,6 +91,7 @@ class MainWindow(QMainWindow):
         with engine.connect() as conn, conn.begin():  
             fromPOS = pd.read_sql(query, conn, dtype={'Qty On Hand':'int64'},)
 
+        fromPOS['Display'] = fromPOS['Display'].str.strip()
         fromPOS.loc[fromPOS['Display'].str.startswith('0'), 'Display'] = '0'
         fromPOS.loc[fromPOS['Display'].str.startswith('1'), 'Display'] = '1'
         fromPOS.loc[fromPOS['Display']=='', 'Display']='0'
