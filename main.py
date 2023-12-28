@@ -1,14 +1,8 @@
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QVBoxLayout, QMessageBox
-from PySide6.QtCore import QSize, QObject
+from PySide6.QtCore import QSize
 from invUpdateWindow import InvUpdateWindow
 from amazonOrderWindow import AmazonOrderWindow
 from salesUpdateWindow import SalesUpdateWindow
-from openpyxl import load_workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
-from sqlalchemy import create_engine
-from sqlalchemy.engine import URL
-import pandas as pd
-import json, datetime
 
 # root_path = "Z:/excel files/00 RMH Sale report/"
 root_path = ''
@@ -22,7 +16,7 @@ class MainWindow(QMainWindow):
 
         button_1 = QPushButton("Inventory Update")
         button_2 = QPushButton("Amazon Order")
-        button_3 = QPushButton("STORE Sales update (take about 5 min)")
+        button_3 = QPushButton("STORE Sales Update")
 
         button_1.clicked.connect(self.button_1_clicked)
         button_2.clicked.connect(self.button_2_clicked)
@@ -39,15 +33,14 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
     
     def button_1_clicked(self):
-        self.w = InvUpdateWindow()
+        self.w = InvUpdateWindow(root_path)
         self.w.show()
 
     def button_2_clicked(self):
-        self.w2 = AmazonOrderWindow()
+        self.w2 = AmazonOrderWindow(root_path)
         self.w2.showMaximized()
 
     def button_3_clicked(self):
-
         self.w3 = SalesUpdateWindow(root_path)
         self.w3.show()
         

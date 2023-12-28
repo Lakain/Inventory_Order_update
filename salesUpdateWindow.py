@@ -20,9 +20,6 @@ class Worker(QThread):
         self._dateTo = dateTo
 
     def run(self):
-        self.task.emit('task!')
-        self.progress.emit(0)
-
         # Create RMN INV table
         self.task.emit('Load database auth info...')
         self.progress.emit(0)
@@ -195,8 +192,7 @@ class SalesUpdateWindow(QWidget):
         self.ui.dateEdit.setEnabled(True)
         self.ui.dateEdit_2.setEnabled(True)
 
-        QMessageBox.information(self, "Info", "Complete")
+        if self.ui.progressBar.value() == self.ui.progressBar.maximum():
+            QMessageBox.information(self, "Info", "Complete")
 
         del self.worker
-
-
