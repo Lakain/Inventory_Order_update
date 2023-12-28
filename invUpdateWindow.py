@@ -9,7 +9,7 @@ from time import sleep
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
-root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = "Z:/excel files/00 RMH Sale report/"
 # root_path = ''
 
 class Worker(QObject):
@@ -17,19 +17,23 @@ class Worker(QObject):
     task = Signal(str)
     progress = Signal(int)
 
-    with open(root_path+'appdata/api_keys.json') as f:
-        temp = json.load(f)
-        credentials = temp['credentials']
-        refresh_token = temp['refresh_token']
-
     createReportResponse = None
     reportResponse = None
     report = None
 
+    def __init__(self, root_path):
+        super().__init__()
+        self._root_path = root_path
+
+        with open(self._root_path+'appdata/api_keys.json') as f:
+            temp = json.load(f)
+            self.credentials = temp['credentials']
+            self.refresh_token = temp['refresh_token']
+
     def run(self):
         # InvUpdateWindow.start_update(self)
         self.createReportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).create_report(reportType=ReportType.GET_MERCHANT_LISTINGS_ALL_DATA)
-        self.update_history = pd.read_excel(root_path+'appdata/update_history.xlsx')
+        self.update_history = pd.read_excel(self._root_path+'appdata/update_history.xlsx')
 
         self.task.emit('Loading all_upc_inv')
         InvUpdateWindow.load_all_upc_inv(self)
@@ -86,7 +90,7 @@ class Worker(QObject):
         while('reportDocumentId' not in self.reportResponse.payload):
             sleep(5)
             self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
-        f = open(root_path+"inv_data\Amazon_All+Listings+Report.txt", "w", encoding='utf-8')
+        f = open(self._root_path+"inv_data\Amazon_All+Listings+Report.txt", "w", encoding='utf-8')
         Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report_document(self.reportResponse.payload['reportDocumentId'], file=f)
         f.close()
 
@@ -98,7 +102,7 @@ class Worker(QObject):
         InvUpdateWindow.update_amazon_ord(self)
         self.progress.emit(65)
 
-        self.update_history.to_excel(root_path+'appdata/update_history.xlsx', index=False)
+        self.update_history.to_excel(self._root_path+'appdata/update_history.xlsx', index=False)
 
         self.task.emit('Saving inventory data')
         InvUpdateWindow.save_data(self)
@@ -108,10 +112,11 @@ class Worker(QObject):
         self.finished.emit()
 
 class InvUpdateWindow(QWidget):
-    def __init__(self):
+    def __init__(self, root_path):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+        self._root_path = root_path
 
         # self.ui.pushButton.setDisabled(True)
         self.ui.pushButton_2.clicked.connect(self.start_update)
@@ -133,7 +138,7 @@ class InvUpdateWindow(QWidget):
 
     def start_update(self):
         self.thread = QThread()
-        self.worker = Worker()
+        self.worker = Worker(self._root_path)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
@@ -155,7 +160,7 @@ class InvUpdateWindow(QWidget):
         # all upc inv import
         # filename = QFileDialog.getOpenFileName(self, "Select File", "./", "Any Files (*)")
         # self.all_upc_inv = pd.read_excel(filename[0], sheet_name=3)
-        self.all_upc_inv = pd.read_excel(root_path+"appdata/all_upc_inv.xlsx")
+        self.all_upc_inv = pd.read_excel(self._root_path+"appdata/all_upc_inv.xlsx")
 
         # delete unnecessary columns
         self.all_upc_inv.drop(self.all_upc_inv.columns[5:], axis=1, inplace=True)
@@ -171,11 +176,11 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File ALICIA (AL) brs inv", "./", "Any Files (*)")
         # temp1 = pd.read_excel(filename[0])
-        temp1 = pd.read_excel(root_path+'inv_data\AL_brs inv.xls')
+        temp1 = pd.read_excel(self._root_path+'inv_data\AL_brs inv.xls')
 
         # filename = QFileDialog.getOpenFileName(self, "Select File ALICIA (AL) inv", "./", "Any Files (*)")
         # temp2 = pd.read_excel(filename[0])
-        temp2 = pd.read_excel(root_path+'inv_data\AL_inv.xls')
+        temp2 = pd.read_excel(self._root_path+'inv_data\AL_inv.xls')
 
         new_inv = pd.concat([temp1, temp2], ignore_index=True)
         # get column name for choose upc / company inventory / description / extended description columns
@@ -226,7 +231,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File AMEKOR (VF)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0])
-        new_inv = pd.read_excel(root_path+'inv_data\VF_Inventory.xls', dtype={'Barcode':str})
+        new_inv = pd.read_excel(self._root_path+'inv_data\VF_Inventory.xls', dtype={'Barcode':str})
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -280,7 +285,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File BOYANG (BY)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0], skiprows=3)
-        new_inv = pd.read_excel(root_path+'inv_data\BY_InventoryListAll.xls', skiprows=3)
+        new_inv = pd.read_excel(self._root_path+'inv_data\BY_InventoryListAll.xls', skiprows=3)
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -331,7 +336,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File CHADE (NBF)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0])
-        new_inv = pd.read_excel(root_path+'inv_data/NBF_Chade Fashions.xlsx')
+        new_inv = pd.read_excel(self._root_path+'inv_data/NBF_Chade Fashions.xlsx')
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -379,7 +384,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File SUN TAIYANG (OUTRE)", "./", "Any Files (*)")
         # new_inv = pd.read_csv(filename[0], sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1)
-        new_inv = pd.read_csv(root_path+'inv_data\OUTRE_StockAvailability.csv', sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1, engine='python')
+        new_inv = pd.read_csv(self._root_path+'inv_data\OUTRE_StockAvailability.csv', sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1, engine='python')
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -431,7 +436,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File SENSATIONNEL (HZ)", "./", "Any Files (*)")
         # new_inv = pd.read_csv(filename[0], sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1)
-        new_inv = pd.read_csv(root_path+'inv_data\HZ_StockAvailability.csv', sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1, engine='python')
+        new_inv = pd.read_csv(self._root_path+'inv_data\HZ_StockAvailability.csv', sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1, engine='python')
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -484,7 +489,7 @@ class InvUpdateWindow(QWidget):
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File SHAKE-N-GO (SNG)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0])
-        new_inv = pd.read_excel(root_path+'inv_data\SNG_inv.xlsx')
+        new_inv = pd.read_excel(self._root_path+'inv_data\SNG_inv.xlsx')
 
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
@@ -532,7 +537,7 @@ class InvUpdateWindow(QWidget):
     def update_backord(self):
         # filename = QFileDialog.getOpenFileName(self, "Select File backorded_list", "./", "Any Files (*)")
         # backorder_list = pd.read_csv(filename[0], dtype={'upc':str})
-        backorder_list = pd.read_excel(root_path+'appdata/backorder_list.xlsx', dtype={'upc':str})
+        backorder_list = pd.read_excel(self._root_path+'appdata/backorder_list.xlsx', dtype={'upc':str})
         self.all_upc_inv['UPC'] = self.all_upc_inv['UPC'].astype(str)
         self.all_upc_inv['DESCRIPTION'] = self.all_upc_inv['DESCRIPTION'].astype(str)
         self.all_upc_inv['EXTENDED DESCRIPTION'] = self.all_upc_inv['EXTENDED DESCRIPTION'].astype(str)
@@ -545,7 +550,7 @@ class InvUpdateWindow(QWidget):
     def update_duplicate(self):
         # filename = QFileDialog.getOpenFileName(self, "Select File dulplicate_list", "./", "Any Files (*)")
         # duplicate_list = pd.read_csv(filename[0], dtype={'UPC': str, 'DESCRIPTION':str,'EXTENDED DESCRIPTION':str})
-        duplicate_list = pd.read_excel(root_path+'appdata/duplicate_list.xlsx', dtype={'UPC': str, 'DESCRIPTION':str,'EXTENDED DESCRIPTION':str})
+        duplicate_list = pd.read_excel(self._root_path+'appdata/duplicate_list.xlsx', dtype={'UPC': str, 'DESCRIPTION':str,'EXTENDED DESCRIPTION':str})
 
         duplicate_index = self.all_upc_inv[(self.all_upc_inv['UPC'].isin(duplicate_list['UPC'])&(self.all_upc_inv['DESCRIPTION'].isin(duplicate_list['DESCRIPTION'])&(self.all_upc_inv['EXTENDED DESCRIPTION'].isin(duplicate_list['EXTENDED DESCRIPTION']))))].index
         self.all_upc_inv.drop(duplicate_index, inplace=True)
@@ -554,7 +559,7 @@ class InvUpdateWindow(QWidget):
         # self.button_dup.setDisabled(True)
 
     def update_POS(self):
-        with open(root_path+'appdata/db_auth.json') as f:
+        with open(self._root_path+'appdata/db_auth.json') as f:
             temp = json.load(f)
             server = temp['server']
             database = temp['database'] 
@@ -594,7 +599,7 @@ class InvUpdateWindow(QWidget):
         # fromPOS['Display'] = fromPOS['Display'].str.strip()
 
         # fromPOS['Display'].fillna('0', inplace=True)
-
+        fromPOS['Display'] = fromPOS['Display'].str.strip()
         fromPOS.loc[fromPOS['Display'].str.startswith('0'), 'Display'] = '0'
         fromPOS.loc[fromPOS['Display'].str.startswith('1'), 'Display'] = '1'
         # fromPOS.loc[fromPOS['Display'].str.startswith('C'), 'Display'] = '0'
@@ -629,7 +634,7 @@ class InvUpdateWindow(QWidget):
     def update_amazon(self):
         # filename = QFileDialog.getOpenFileName(self, "Select File Amazon All List Report", "./", "Any Files (*)")
         # all_amazon = pd.read_csv(filename[0], sep='\t')
-        all_amazon = pd.read_csv(root_path+'inv_data\Amazon_All+Listings+Report.txt', sep='\t')
+        all_amazon = pd.read_csv(self._root_path+'inv_data\Amazon_All+Listings+Report.txt', sep='\t')
         all_amazon = all_amazon[['seller-sku', 'asin1', 'item-name', 'item-description', 'listing-id',
        'price', 'quantity', 'open-date', 'product-id-type', 'item-note',
        'item-condition', 'will-ship-internationally', 'expedited-shipping',
@@ -678,7 +683,7 @@ class InvUpdateWindow(QWidget):
     def update_amazon_ord(self):
         # filename = QFileDialog.getOpenFileName(self, "Select File Amazon unsshipped order list", "./", "Any Files (*)")
         # unshipped_data = pd.read_csv(filename[0], sep='\t', dtype={'product-id':str})
-        unshipped_data = pd.read_csv(root_path+'inv_data\Amazon_unshipped_report.txt', sep='\t', dtype={'product-id':str})
+        unshipped_data = pd.read_csv(self._root_path+'inv_data\Amazon_unshipped_report.txt', sep='\t', dtype={'product-id':str})
 
         all_amazon = self.all_amazon[['seller-sku', 'inv_comp', 'inv_store', 'product-id', 'item-name']]
 
@@ -707,16 +712,16 @@ class InvUpdateWindow(QWidget):
 
     def save_data(self):
         # self.all_upc_inv.to_csv("all_upc_inv"+datetime.date.today().strftime("%m%d%y")+".csv", index=False)
-        self.all_upc_inv.to_excel(root_path+"appdata/all_upc_inv.xlsx", index=False)
-        self.all_upc_inv.to_excel(root_path+"appdata/all_upc_inv_backup.xlsx", index=False)
-        self.fromPOS.to_csv(root_path+'fromPOS'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
+        self.all_upc_inv.to_excel(self._root_path+"appdata/all_upc_inv.xlsx", index=False)
+        self.all_upc_inv.to_excel(self._root_path+"appdata/all_upc_inv_backup.xlsx", index=False)
+        self.fromPOS.to_csv(self._root_path+'fromPOS'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
         # self.all_amazon.to_csv('all_amazon'+datetime.date.today().strftime("%m%d%y")+'.csv', index=False)
-        self.amazon_order.to_excel(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', index=False, freeze_panes=(1,0))
+        self.amazon_order.to_excel(self._root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', index=False, freeze_panes=(1,0))
         # self.update_history.to_excel('appdata/update_history.xlsx', index=False)
-        self.update_history = pd.read_excel(root_path+'appdata/update_history.xlsx')
+        self.update_history = pd.read_excel(self._root_path+'appdata/update_history.xlsx')
 
         try:
-            with pd.ExcelWriter(root_path+'All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'.xlsx') as writer:
+            with pd.ExcelWriter(self._root_path+'All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'.xlsx') as writer:
                 self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False, freeze_panes=(3,1))
                 self.amazon_order.to_excel(writer, sheet_name='order', index=False, freeze_panes=(1,0))
                 self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))
@@ -725,7 +730,7 @@ class InvUpdateWindow(QWidget):
                 self.update_history.to_excel(writer, sheet_name='update_history', index=False)
         except:
             print('\033[31m'+f'Error occured while saveing file. Save file as "All_Listings_Report_{datetime.date.today().strftime("%m_%d_%Y")}_new.xlsx"'+'\033[0m')
-            with pd.ExcelWriter(root_path+'All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'_new.xlsx') as writer:
+            with pd.ExcelWriter(self._root_path+'All_Listings_Report_'+datetime.date.today().strftime("%m_%d_%Y")+'_new.xlsx') as writer:
                 self.all_amazon.to_excel(writer, sheet_name='All_Amazon', index=False, freeze_panes=(3,1))
                 self.amazon_order.to_excel(writer, sheet_name='order', index=False, freeze_panes=(1,0))
                 self.fromPOS.to_excel(writer, sheet_name='from POS'+datetime.date.today().strftime("%m_%d_%Y"), index=False, freeze_panes=(3,0))

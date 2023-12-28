@@ -8,14 +8,15 @@ import pandas as pd
 import datetime
 import webbrowser
 
-root_path = "Z:/excel files/00 RMH Sale report/"
+# root_path = "Z:/excel files/00 RMH Sale report/"
 # root_path = ''
 
 class AmazonOrderWindow(QWidget):
-    def __init__(self):
+    def __init__(self, root_path):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
+        self._root_path = root_path
 
         df = pd.read_excel(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', dtype=str)
         df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
@@ -89,7 +90,7 @@ class AmazonOrderWindow(QWidget):
                 rows.append(int(r))
 
         self.model._data.drop(rows, inplace=True)
-        self.model._data.drop(columns=['Last Order']).to_excel(root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', index=False)
+        self.model._data.drop(columns=['Last Order']).to_excel(self._root_path+'amazon_order'+datetime.date.today().strftime("%m%d%y")+'.xlsx', index=False)
 
         self.model = PandasModel(self.model._data)
         self.proxymodel = QSortFilterProxyModel()
@@ -157,13 +158,13 @@ class AmazonOrderWindow(QWidget):
 
         self.model_history._data.drop(rows, inplace=True)
         self.model_history._data.reset_index(drop=True, inplace=True)
-        self.model_history._data.to_excel(root_path+'appdata/order_history.xlsx', index=False)
+        self.model_history._data.to_excel(self._root_path+'appdata/order_history.xlsx', index=False)
         
         self.refresh_button_clicked()
 
 
     def refresh_button_clicked(self):
-        df_history = pd.read_excel(root_path+'appdata/order_history.xlsx')
+        df_history = pd.read_excel(self._root_path+'appdata/order_history.xlsx')
         self.model_history = PandasModel(df_history)
         self.proxymodel_history = QSortFilterProxyModel()
         self.proxymodel_history.setSourceModel(self.model_history)
@@ -192,7 +193,7 @@ class AmazonOrderWindow(QWidget):
         item_name = self.ui.tableView.model().data(self.ui.tableView.model().index(r, 12))
         # print(r, c)
         self.model_preshipped._data = pd.concat([self.model_preshipped._data, pd.Series([order_id, sku, memo, item_name], index=self.model_preshipped._data.columns).to_frame().T], ignore_index=True)
-        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
+        self.model_preshipped._data.to_excel(self._root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
 
     def delete_preshipped(self):
         r = self.ui.tableView_3.currentIndex().row()
@@ -204,7 +205,7 @@ class AmazonOrderWindow(QWidget):
         self.proxymodel_preshipped = QSortFilterProxyModel()
         self.proxymodel_preshipped.setSourceModel(self.model_preshipped)
         self.ui.tableView_3.setModel(self.proxymodel_preshipped)
-        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
+        self.model_preshipped._data.to_excel(self._root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
         
     def refresh_table(self):
         self.model_preshipped = PandasModel(self.model_preshipped._data)
@@ -222,7 +223,7 @@ class AmazonOrderWindow(QWidget):
     # Save preshipped data to excel file.
     def save_preshipped(self):
         # print('saved')
-        self.model_preshipped._data.to_excel(root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
+        self.model_preshipped._data.to_excel(self._root_path+'appdata/preshipped.xlsx', index=False, engine='openpyxl')
 
     
 ################################################################################################
@@ -256,6 +257,6 @@ class AmazonOrderWindow(QWidget):
         for i in range(self.ui.tableWidget.rowCount()):
             order_list.append([self.ui.tableWidget.item(i, 0).text(), self.ui.tableWidget.item(i,1).text()])
         order_df = pd.DataFrame(order_list,columns=['sku', 'order-id'])
-        self.orderForm = orderForm(order_df, self.model._data)
+        self.orderForm = orderForm(order_df, self.model._data, self._root_path)
         self.orderForm.show()
 
