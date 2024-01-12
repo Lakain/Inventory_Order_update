@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 from sp_api.api import Reports
 from sp_api.base.reportTypes import ReportType
 import pandas as pd
-import datetime, json, webbrowser
+import datetime, json, webbrowser, email, imaplib, os
 from inventoryUpdate_ui import Ui_Form
 from time import sleep
 from sqlalchemy import create_engine
@@ -173,6 +173,42 @@ class InvUpdateWindow(QWidget):
         # QMessageBox.information(self, "Info", "Updated")
     
     def update_AL(self):
+        with open(self._root_path+'appdata/gmail_auth.json') as f:
+            temp = json.load(f)
+            email_user = temp['username']
+            email_password = temp['password']
+
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_user, email_password)
+        mail.select('"[Gmail]/All Mail"')
+        status, messages = mail.search(None,'SUBJECT inventory FROM kjo@aliciaintl.com')
+
+        if status == 'OK':
+            # Convert messages list from bytes to list of email IDs
+            messages = messages[0].split()
+
+            res, msg = mail.fetch(messages[-1], '(RFC822)')
+
+            decoded_msg = email.message_from_bytes(msg[0][1])
+            date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+
+            for part in decoded_msg.walk():
+                if part.get('Content-Disposition'):
+                    filename = part.get_filename()
+                    if 'brs' in filename:
+                        with open(self._root_path+'inv_data/AL_brs inv.xls', 'wb') as f:
+                            f.write(part.get_payload(decode=True))
+                        print(f'AL - {filename} downloaded')
+                    elif 'inv' in filename:
+                        with open(self._root_path+'inv_data/AL_inv.xls', 'wb') as f:
+                            f.write(part.get_payload(decode=True))
+                        print(f'AL - {filename} downloaded')
+        else:
+            print("Failed to retrieve emails.")
+        
+        mail.close()
+        mail.logout()
+
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File ALICIA (AL) brs inv", "./", "Any Files (*)")
         # temp1 = pd.read_excel(filename[0])
@@ -228,6 +264,38 @@ class InvUpdateWindow(QWidget):
         # QMessageBox.information(self, "Info", "Updated")
 
     def update_VF(self):
+        with open(self._root_path+'appdata/gmail_auth.json') as f:
+            temp = json.load(f)
+            email_user = temp['username']
+            email_password = temp['password']
+
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_user, email_password)
+        mail.select('"[Gmail]/All Mail"')
+
+        status, messages = mail.search(None,'SUBJECT inventory FROM no-reply@amekor.com')
+
+        if status == 'OK':
+            # Convert messages list from bytes to list of email IDs
+            messages = messages[0].split()
+
+            res, msg = mail.fetch(messages[-1], '(RFC822)')
+
+            decoded_msg = email.message_from_bytes(msg[0][1])
+            date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+
+            for part in decoded_msg.walk():
+                if part.get('Content-Disposition'):
+                    filename = part.get_filename()
+                    with open(self._root_path+'inv_data/VF_Inventory.xls', 'wb') as f:
+                        f.write(part.get_payload(decode=True))
+                    print(f'VF - {filename} downloaded')
+        else:
+            print("Failed to retrieve emails.")
+
+        mail.close()
+        mail.logout()
+
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File AMEKOR (VF)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0])
@@ -282,6 +350,38 @@ class InvUpdateWindow(QWidget):
         # QMessageBox.information(self, "Info", "Updated")
 
     def update_BY(self):
+        with open(self._root_path+'appdata/gmail_auth.json') as f:
+            temp = json.load(f)
+            email_user = temp['username']
+            email_password = temp['password']
+
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_user, email_password)
+        mail.select('"[Gmail]/All Mail"')
+
+        status, messages = mail.search(None,'SUBJECT inventory FROM superjoshuadad@gmail.com')
+
+        if status == 'OK':
+            # Convert messages list from bytes to list of email IDs
+            messages = messages[0].split()
+
+            res, msg = mail.fetch(messages[-1], '(RFC822)')
+
+            decoded_msg = email.message_from_bytes(msg[0][1])
+            date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+
+            for part in decoded_msg.walk():
+                if part.get('Content-Disposition'):
+                    filename = part.get_filename()
+                    with open(self._root_path+'inv_data/BY_InventoryListAll.xls', 'wb') as f:
+                        f.write(part.get_payload(decode=True))
+                    print(f'BY - {filename} downloaded')
+        else:
+            print("Failed to retrieve emails.")
+
+        mail.close()
+        mail.logout()
+
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File BOYANG (BY)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0], skiprows=3)
@@ -333,6 +433,39 @@ class InvUpdateWindow(QWidget):
         # QMessageBox.information(self, "Info", "Updated")
 
     def update_NBF(self):
+        with open(self._root_path+'appdata/gmail_auth.json') as f:
+            temp = json.load(f)
+            email_user = temp['username']
+            email_password = temp['password']
+        
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_user, email_password)
+        mail.select('"[Gmail]/All Mail"')
+
+        status, messages = mail.search(None,'SUBJECT inventory FROM jokim@chade.com')
+
+        if status == 'OK':
+            # Convert messages list from bytes to list of email IDs
+            messages = messages[0].split()
+
+            res, msg = mail.fetch(messages[-1], '(RFC822)')
+
+            decoded_msg = email.message_from_bytes(msg[0][1])
+            date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+
+            for part in decoded_msg.walk():
+                if part.get('Content-Disposition'):
+                    filename = part.get_filename()
+                    if filename.endswith('.xlsx'):
+                        with open(self._root_path+'inv_data/NBF_Chade Fashions.xlsx', 'wb') as f:
+                            f.write(part.get_payload(decode=True))
+                        print(f'NBF - {filename} downloaded')
+        else:
+            print("Failed to retrieve emails.")
+
+        mail.close()
+        mail.logout()
+
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File CHADE (NBF)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0])
@@ -381,6 +514,38 @@ class InvUpdateWindow(QWidget):
         # QMessageBox.information(self, "Info", "Updated")
 
     def update_OUTRE(self):
+        with open(self._root_path+'appdata/gmail_auth.json') as f:
+            temp = json.load(f)
+            email_user = temp['username']
+            email_password = temp['password']
+
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_user, email_password)
+        mail.select('Company/Outre')
+
+        status, messages = mail.search(None,'SUBJECT stock')
+
+        if status == 'OK':
+            # Convert messages list from bytes to list of email IDs
+            messages = messages[0].split()
+
+            res, msg = mail.fetch(messages[-1], '(RFC822)')
+
+            decoded_msg = email.message_from_bytes(msg[0][1])
+            date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%d %b %Y %X %z")
+            
+            for part in decoded_msg.walk():
+                filename = part.get('Content-Type').split('name=')[-1]
+                if filename.endswith('.csv'):
+                    with open(self._root_path+'inv_data/OUTRE_StockAvailability.csv', 'wb') as f:
+                        f.write(part.get_payload(decode=True))
+                    print(f'OUTRE - {filename} downloaded')
+        else:
+            print("Failed to retrieve emails.")
+
+        mail.close()
+        mail.logout()
+
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File SUN TAIYANG (OUTRE)", "./", "Any Files (*)")
         # new_inv = pd.read_csv(filename[0], sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1)
@@ -433,6 +598,38 @@ class InvUpdateWindow(QWidget):
         # QMessageBox.information(self, "Info", "Updated")
 
     def update_HZ(self):
+        with open(self._root_path+'appdata/gmail_auth.json') as f:
+            temp = json.load(f)
+            email_user = temp['username']
+            email_password = temp['password']
+
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_user, email_password)
+        mail.select('Company/Sensationnel')
+
+        status, messages = mail.search(None,'SUBJECT stock')
+
+        if status == 'OK':
+            # Convert messages list from bytes to list of email IDs
+            messages = messages[0].split()
+
+            res, msg = mail.fetch(messages[-1], '(RFC822)')
+
+            decoded_msg = email.message_from_bytes(msg[0][1])
+            date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%d %b %Y %X %z")
+            
+            for part in decoded_msg.walk():
+                filename = part.get('Content-Type').split('name=')[-1]
+                if filename.endswith('.csv'):
+                    with open(self._root_path+'inv_data/HZ_StockAvailability.csv', 'wb') as f:
+                        f.write(part.get_payload(decode=True))
+                    print(f'HZ - {filename} downloaded')
+        else:
+            print("Failed to retrieve emails.")
+
+        mail.close()
+        mail.logout()
+
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File SENSATIONNEL (HZ)", "./", "Any Files (*)")
         # new_inv = pd.read_csv(filename[0], sep='\t', encoding='utf_16', on_bad_lines='warn', skiprows=[1], skipfooter=1)
@@ -486,6 +683,46 @@ class InvUpdateWindow(QWidget):
         # QMessageBox.information(self, "Info", "Updated")
 
     def update_SNG(self):
+        with open(self._root_path+'appdata/gmail_auth.json') as f:
+            temp = json.load(f)
+            email_user = temp['username']
+            email_password = temp['password']
+
+        mail = imaplib.IMAP4_SSL('imap.gmail.com')
+        mail.login(email_user, email_password)
+        mail.select('"[Gmail]/All Mail"')
+
+        status, messages = mail.search(None,'SUBJECT barcode FROM sampark@snghair.com')
+
+        if status == 'OK':
+            # Convert messages list from bytes to list of email IDs
+            messages = messages[0].split()
+            
+            downloaded = False
+            index = 0
+
+            while(downloaded == False):
+                index -= 1
+                res, msg = mail.fetch(messages[index], '(RFC822)')
+
+                decoded_msg = email.message_from_bytes(msg[0][1])
+                date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+
+                for part in decoded_msg.walk():
+                    if part.get('Content-Disposition'):
+                        filename = part.get_filename()
+                        
+                        if len(filename) == 9:
+                            with open(self._root_path+'inv_data/SNG_inv.xlsx', 'wb') as f:
+                                f.write(part.get_payload(decode=True))
+                            print(f'SNG - {filename} downloaded')
+                            downloaded = True
+        else:
+            print("Failed to retrieve emails.")
+
+        mail.close()
+        mail.logout()
+
         # load new inv data
         # filename = QFileDialog.getOpenFileName(self, "Select File SHAKE-N-GO (SNG)", "./", "Any Files (*)")
         # new_inv = pd.read_excel(filename[0])

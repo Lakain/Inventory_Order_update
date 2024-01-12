@@ -2,6 +2,7 @@
 __pycache__/
 appdata/
 inv_data/
+attachments/
 *.xlsx
 *.csv
 *.xls
