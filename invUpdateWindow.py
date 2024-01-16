@@ -42,37 +42,30 @@ class Worker(QObject):
 
         self.task.emit('Updating AL inventory')
         self.update_AL()
-        self.update_history.loc[self.update_history['Initial']=='AL', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(10)
 
         self.task.emit('Updating VF inventory')
         self.update_VF()
-        self.update_history.loc[self.update_history['Initial']=='VF', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(15)
 
         self.task.emit('Updating BY inventory')
         self.update_BY()
-        self.update_history.loc[self.update_history['Initial']=='BY', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(20)
 
         self.task.emit('Updating NBF inventory')
         self.update_NBF()
-        self.update_history.loc[self.update_history['Initial']=='NBF', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(25)
 
         self.task.emit('Updating OUTRE inventory')
         self.update_OUTRE()
-        self.update_history.loc[self.update_history['Initial']=='OUTRE', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(30)
 
         self.task.emit('Updating HZ inventory')
         self.update_HZ()
-        self.update_history.loc[self.update_history['Initial']=='HZ', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(35)
 
         self.task.emit('Updating SNG inventory')
         self.update_SNG()
-        self.update_history.loc[self.update_history['Initial']=='SNG', 'Date'] = datetime.date.today().strftime("%d-%b")
         self.progress.emit(40)
 
         self.task.emit('Updating backorded items')
@@ -144,6 +137,7 @@ class Worker(QObject):
 
                 decoded_msg = email.message_from_bytes(msg[0][1])
                 date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+                self.update_history.loc[self.update_history['Initial']=='AL', 'Date'] = date_recieved.strftime("%d-%b")
 
                 for part in decoded_msg.walk():
                     if part.get('Content-Disposition'):
@@ -237,6 +231,7 @@ class Worker(QObject):
 
                 decoded_msg = email.message_from_bytes(msg[0][1])
                 date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+                self.update_history.loc[self.update_history['Initial']=='VF', 'Date'] = date_recieved.strftime("%d-%b")
 
                 for part in decoded_msg.walk():
                     if part.get('Content-Disposition'):
@@ -324,6 +319,7 @@ class Worker(QObject):
 
                 decoded_msg = email.message_from_bytes(msg[0][1])
                 date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+                self.update_history.loc[self.update_history['Initial']=='BY', 'Date'] = date_recieved.strftime("%d-%b")
 
                 for part in decoded_msg.walk():
                     if part.get('Content-Disposition'):
@@ -408,6 +404,7 @@ class Worker(QObject):
 
                 decoded_msg = email.message_from_bytes(msg[0][1])
                 date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+                self.update_history.loc[self.update_history['Initial']=='NBF', 'Date'] = date_recieved.strftime("%d-%b")
 
                 for part in decoded_msg.walk():
                     if part.get('Content-Disposition'):
@@ -490,6 +487,7 @@ class Worker(QObject):
 
                 decoded_msg = email.message_from_bytes(msg[0][1])
                 date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%d %b %Y %X %z")
+                self.update_history.loc[self.update_history['Initial']=='OUTRE', 'Date'] = date_recieved.strftime("%d-%b")
                 
                 for part in decoded_msg.walk():
                     filename = part.get('Content-Type').split('name=')[-1]
@@ -575,6 +573,7 @@ class Worker(QObject):
 
                 decoded_msg = email.message_from_bytes(msg[0][1])
                 date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%d %b %Y %X %z")
+                self.update_history.loc[self.update_history['Initial']=='HZ', 'Date'] = date_recieved.strftime("%d-%b")
                 
                 for part in decoded_msg.walk():
                     filename = part.get('Content-Type').split('name=')[-1]
@@ -666,6 +665,7 @@ class Worker(QObject):
 
                     decoded_msg = email.message_from_bytes(msg[0][1])
                     date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+                    self.update_history.loc[self.update_history['Initial']=='SNG', 'Date'] = date_recieved.strftime("%d-%b")
 
                     for part in decoded_msg.walk():
                         if part.get('Content-Disposition'):
