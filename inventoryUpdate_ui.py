@@ -23,7 +23,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(409, 347)
+        Form.resize(372, 363)
         self.gridLayout = QGridLayout(Form)
         self.gridLayout.setObjectName(u"gridLayout")
         self.pushButton_2 = QPushButton(Form)
@@ -63,108 +63,66 @@ class Ui_Form(object):
         self.horizontalLayout.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.checkBox_8 = QCheckBox(Form)
-        self.checkBox_8.setObjectName(u"checkBox_8")
+        self.checkBox_AL = QCheckBox(Form)
+        self.checkBox_AL.setObjectName(u"checkBox_AL")
 
-        self.verticalLayout.addWidget(self.checkBox_8)
+        self.verticalLayout.addWidget(self.checkBox_AL)
 
-        self.checkBox_7 = QCheckBox(Form)
-        self.checkBox_7.setObjectName(u"checkBox_7")
+        self.checkBox_VF = QCheckBox(Form)
+        self.checkBox_VF.setObjectName(u"checkBox_VF")
 
-        self.verticalLayout.addWidget(self.checkBox_7)
+        self.verticalLayout.addWidget(self.checkBox_VF)
 
-        self.checkBox_6 = QCheckBox(Form)
-        self.checkBox_6.setObjectName(u"checkBox_6")
+        self.checkBox_BY = QCheckBox(Form)
+        self.checkBox_BY.setObjectName(u"checkBox_BY")
 
-        self.verticalLayout.addWidget(self.checkBox_6)
+        self.verticalLayout.addWidget(self.checkBox_BY)
 
-        self.checkBox_5 = QCheckBox(Form)
-        self.checkBox_5.setObjectName(u"checkBox_5")
+        self.checkBox_NBF = QCheckBox(Form)
+        self.checkBox_NBF.setObjectName(u"checkBox_NBF")
 
-        self.verticalLayout.addWidget(self.checkBox_5)
+        self.verticalLayout.addWidget(self.checkBox_NBF)
 
-        self.checkBox_4 = QCheckBox(Form)
-        self.checkBox_4.setObjectName(u"checkBox_4")
+        self.checkBox_OUTRE = QCheckBox(Form)
+        self.checkBox_OUTRE.setObjectName(u"checkBox_OUTRE")
 
-        self.verticalLayout.addWidget(self.checkBox_4)
+        self.verticalLayout.addWidget(self.checkBox_OUTRE)
 
-        self.checkBox_3 = QCheckBox(Form)
-        self.checkBox_3.setObjectName(u"checkBox_3")
+        self.checkBox_HZ = QCheckBox(Form)
+        self.checkBox_HZ.setObjectName(u"checkBox_HZ")
 
-        self.verticalLayout.addWidget(self.checkBox_3)
+        self.verticalLayout.addWidget(self.checkBox_HZ)
 
-        self.checkBox_2 = QCheckBox(Form)
-        self.checkBox_2.setObjectName(u"checkBox_2")
+        self.checkBox_SNG = QCheckBox(Form)
+        self.checkBox_SNG.setObjectName(u"checkBox_SNG")
 
-        self.verticalLayout.addWidget(self.checkBox_2)
+        self.verticalLayout.addWidget(self.checkBox_SNG)
 
-        self.checkBox = QCheckBox(Form)
-        self.checkBox.setObjectName(u"checkBox")
+        self.checkBox_bord = QCheckBox(Form)
+        self.checkBox_bord.setObjectName(u"checkBox_bord")
 
-        self.verticalLayout.addWidget(self.checkBox)
+        self.verticalLayout.addWidget(self.checkBox_bord)
 
 
         self.horizontalLayout.addLayout(self.verticalLayout)
 
-        self.verticalLayout_3 = QVBoxLayout()
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setSizeConstraint(QLayout.SetDefaultConstraint)
-        self.pushButton_AL = QPushButton(Form)
-        self.pushButton_AL.setObjectName(u"pushButton_AL")
-        self.pushButton_AL.setEnabled(True)
+        self.verticalLayout_4 = QVBoxLayout()
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(-1, -1, -1, 155)
+        self.checkBox_POS = QCheckBox(Form)
+        self.checkBox_POS.setObjectName(u"checkBox_POS")
 
-        self.verticalLayout_3.addWidget(self.pushButton_AL)
+        self.verticalLayout_4.addWidget(self.checkBox_POS)
 
-        self.pushButton_VF = QPushButton(Form)
-        self.pushButton_VF.setObjectName(u"pushButton_VF")
+        self.checkBox_Amazon = QCheckBox(Form)
+        self.checkBox_Amazon.setObjectName(u"checkBox_Amazon")
 
-        self.verticalLayout_3.addWidget(self.pushButton_VF)
-
-        self.pushButton_BY = QPushButton(Form)
-        self.pushButton_BY.setObjectName(u"pushButton_BY")
-
-        self.verticalLayout_3.addWidget(self.pushButton_BY)
-
-        self.pushButton_NBF = QPushButton(Form)
-        self.pushButton_NBF.setObjectName(u"pushButton_NBF")
-
-        self.verticalLayout_3.addWidget(self.pushButton_NBF)
-
-        self.pushButton_OUTRE = QPushButton(Form)
-        self.pushButton_OUTRE.setObjectName(u"pushButton_OUTRE")
-
-        self.verticalLayout_3.addWidget(self.pushButton_OUTRE)
-
-        self.pushButton_HZ = QPushButton(Form)
-        self.pushButton_HZ.setObjectName(u"pushButton_HZ")
-
-        self.verticalLayout_3.addWidget(self.pushButton_HZ)
-
-        self.pushButton_SNG = QPushButton(Form)
-        self.pushButton_SNG.setObjectName(u"pushButton_SNG")
-
-        self.verticalLayout_3.addWidget(self.pushButton_SNG)
+        self.verticalLayout_4.addWidget(self.checkBox_Amazon)
 
         self.pushButton_bord = QPushButton(Form)
         self.pushButton_bord.setObjectName(u"pushButton_bord")
 
-        self.verticalLayout_3.addWidget(self.pushButton_bord)
-
-
-        self.horizontalLayout.addLayout(self.verticalLayout_3)
-
-        self.verticalLayout_4 = QVBoxLayout()
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(-1, -1, -1, 172)
-        self.checkBox_11 = QCheckBox(Form)
-        self.checkBox_11.setObjectName(u"checkBox_11")
-
-        self.verticalLayout_4.addWidget(self.checkBox_11)
-
-        self.checkBox_10 = QCheckBox(Form)
-        self.checkBox_10.setObjectName(u"checkBox_10")
-
-        self.verticalLayout_4.addWidget(self.checkBox_10)
+        self.verticalLayout_4.addWidget(self.pushButton_bord)
 
 
         self.horizontalLayout.addLayout(self.verticalLayout_4)
@@ -184,6 +142,8 @@ class Ui_Form(object):
         font1.setPointSize(10)
         font1.setBold(True)
         self.label_2.setFont(font1)
+        self.label_2.setScaledContents(False)
+        self.label_2.setWordWrap(True)
 
         self.gridLayout.addWidget(self.label_2, 0, 0, 1, 4)
 
@@ -198,25 +158,18 @@ class Ui_Form(object):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Inventory Update", None))
         self.pushButton_2.setText(QCoreApplication.translate("Form", u"Update", None))
         self.label.setText(QCoreApplication.translate("Form", u"Initialize...", None))
-        self.checkBox_8.setText(QCoreApplication.translate("Form", u"AL - ALICIA", None))
-        self.checkBox_7.setText(QCoreApplication.translate("Form", u"VF - AMEKOR", None))
-        self.checkBox_6.setText(QCoreApplication.translate("Form", u"BY - BOYANG", None))
-        self.checkBox_5.setText(QCoreApplication.translate("Form", u"NBF - CHADE", None))
-        self.checkBox_4.setText(QCoreApplication.translate("Form", u"OUTRE - SUNTAIYANG", None))
-        self.checkBox_3.setText(QCoreApplication.translate("Form", u"HZ - SENSATIONNEL", None))
-        self.checkBox_2.setText(QCoreApplication.translate("Form", u"SNG - SHAKE-N-GO", None))
-        self.checkBox.setText(QCoreApplication.translate("Form", u"Backorder List", None))
-        self.pushButton_AL.setText(QCoreApplication.translate("Form", u"AL(Gmail)", None))
-        self.pushButton_VF.setText(QCoreApplication.translate("Form", u"VF(Gmail)", None))
-        self.pushButton_BY.setText(QCoreApplication.translate("Form", u"BY(Gmail)", None))
-        self.pushButton_NBF.setText(QCoreApplication.translate("Form", u"NBF(Gmail)", None))
-        self.pushButton_OUTRE.setText(QCoreApplication.translate("Form", u"OUTRE(Gmail)", None))
-        self.pushButton_HZ.setText(QCoreApplication.translate("Form", u"HZ(Gmail)", None))
-        self.pushButton_SNG.setText(QCoreApplication.translate("Form", u"SNG(Gmail)", None))
+        self.checkBox_AL.setText(QCoreApplication.translate("Form", u"AL - ALICIA", None))
+        self.checkBox_VF.setText(QCoreApplication.translate("Form", u"VF - AMEKOR", None))
+        self.checkBox_BY.setText(QCoreApplication.translate("Form", u"BY - BOYANG", None))
+        self.checkBox_NBF.setText(QCoreApplication.translate("Form", u"NBF - CHADE", None))
+        self.checkBox_OUTRE.setText(QCoreApplication.translate("Form", u"OUTRE - SUNTAIYANG", None))
+        self.checkBox_HZ.setText(QCoreApplication.translate("Form", u"HZ - SENSATIONNEL", None))
+        self.checkBox_SNG.setText(QCoreApplication.translate("Form", u"SNG - SHAKE-N-GO", None))
+        self.checkBox_bord.setText(QCoreApplication.translate("Form", u"Backorder List", None))
+        self.checkBox_POS.setText(QCoreApplication.translate("Form", u"POS Inventory", None))
+        self.checkBox_Amazon.setText(QCoreApplication.translate("Form", u"Amazon Unshipped", None))
         self.pushButton_bord.setText(QCoreApplication.translate("Form", u"Backorder List", None))
-        self.checkBox_11.setText(QCoreApplication.translate("Form", u"POS Inventory", None))
-        self.checkBox_10.setText(QCoreApplication.translate("Form", u"Amazon Unshipped", None))
         self.pushButton.setText(QCoreApplication.translate("Form", u"Close", None))
-        self.label_2.setText(QCoreApplication.translate("Form", u"Inventory Data Check List (Prepare before start update)", None))
+        self.label_2.setText(QCoreApplication.translate("Form", u"If you want to skip downloading data from email, use a check box.", None))
     # retranslateUi
 
