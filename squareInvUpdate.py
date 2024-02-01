@@ -4,8 +4,8 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 
-# root_path = ''
-root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
 
 if __name__ == '__main__':
     with open(root_path+'appdata/square_auth.json') as f:

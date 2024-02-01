@@ -4,8 +4,8 @@ from invUpdateWindow import InvUpdateWindow
 from amazonOrderWindow import AmazonOrderWindow
 from salesUpdateWindow import SalesUpdateWindow
 
-root_path = "Z:/excel files/00 RMH Sale report/"
-# root_path = ''
+# root_path = "Z:/excel files/00 RMH Sale report/"
+root_path = ''
 
 class MainWindow(QMainWindow):
     def __init__(self):
