@@ -12,7 +12,7 @@ Inventory Manager is designed to streamline the process of managing suppliers' i
 
 ## Technology Stack
 - **Amazon Seller Partner API (SP-API)**: For integrating with Amazon Marketplace to manage listings and orders.
-- **Square API**: Utilized for payment processing and sales data (assumed based on mention, specifics not provided).
+- **Square API**: For integrating with Square Marketplace to manage listings and orders.
 - **Microsoft SQL**: Serves as the backend database for storing inventory and order data.
 - **Python**: The primary programming language used for developing Inventory Manager, handling data processing, API communication, and automation tasks.
 
