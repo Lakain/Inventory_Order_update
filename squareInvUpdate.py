@@ -35,8 +35,8 @@ if __name__ == '__main__':
     with open(root_path+'appdata/db_auth.json') as f:
         temp = json.load(f)
         server = temp['server']
-        database = temp['database'] 
-        username = temp['username'] 
+        database = temp['database']
+        username = temp['username']
         password = temp['password']
 
     connection_string = 'DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password
