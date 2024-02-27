@@ -125,7 +125,11 @@ class Worker(QThread):
         merged.insert(7, 'Color', pd.NA)
 
         for i in range(len(merged)):
-            merged.loc[i,'Color'] = merged.loc[i, 'Description'][len(merged['Item'][i])+1:]
+            try:
+                merged.loc[i,'Color'] = merged.loc[i, 'Description'][len(merged['Item'][i])+1:]
+            except:
+                print(f"Reorder No. Error in DataBase. Check >> {merged.loc[i, 'Description']}")
+                merged.loc[i,'Color'] = merged['Description'][i].str.rsplit()[-1]
 
         merged['Item_Inv'] = merged['Item']+'('+merged['Item Tot'].astype(str)+')'
         merged['Color_Inv'] = merged['Color']+'('+merged['RMH_Inv'].astype(str)+' - '+merged['Comp Inv'].astype(str)+') - '+merged['Item Lookup Code'].astype(str)
