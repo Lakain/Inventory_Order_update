@@ -243,7 +243,7 @@ class Worker(QObject):
                 self.update_history.loc[self.update_history['Initial']=='VF', 'Date'] = date_recieved.strftime("%d-%b")
 
                 for part in decoded_msg.walk():
-                    if part.get('Content-Disposition'):
+                    if part.get('Content-Disposition') and part.get_content_type() == 'application/vnd.ms-excel':
                         filename = part.get_filename()
                         with open(self._root_path+'inv_data/VF_Inventory.xls', 'wb') as f:
                             f.write(part.get_payload(decode=True))
