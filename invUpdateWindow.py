@@ -805,6 +805,10 @@ class Worker(QObject):
 
         # fromPOS['Display'].fillna('0', inplace=True)
         fromPOS['Display'] = fromPOS['Display'].str.strip()
+        index = fromPOS.loc[fromPOS['Display'].str.contains('\(\d*\)', regex=True)].index
+        fromPOS.loc[index, 'Display'] = fromPOS.loc[index, 'Display'].str.replace('(', ' ').str.strip(')').str.split()
+        for i in index:
+            fromPOS.loc[i, 'Display'] = str(sum([eval(a) for a in fromPOS.loc[i, 'Display']]))
         fromPOS.loc[fromPOS['Display'].str.startswith('0'), 'Display'] = '0'
         fromPOS.loc[fromPOS['Display'].str.startswith('1'), 'Display'] = '1'
         # fromPOS.loc[fromPOS['Display'].str.startswith('C'), 'Display'] = '0'
