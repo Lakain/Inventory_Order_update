@@ -38,6 +38,7 @@ class Worker(QObject):
             self.OUTRE_mail = temp['OUTRE']
             self.HZ_mail = temp['HZ']
             self.SNG_mail = temp['SNG']
+            self.MANE_mail = temp['MANE']
             
     def run(self):
         # InvUpdateWindow.start_update(self)
@@ -76,17 +77,21 @@ class Worker(QObject):
         self.update_SNG()
         self.progress.emit(40)
 
+        self.task.emit('Updating MANE inventory')
+        self.update_MANE()
+        self.progress.emit(45)
+
         self.task.emit('Updating backorded items')
         self.update_backord()
-        self.progress.emit(45)
+        self.progress.emit(50)
 
         self.task.emit('Updating duplicate items')
         self.update_duplicate()
-        self.progress.emit(50)
+        self.progress.emit(55)
 
         self.task.emit('Updating POS inventory')
         self.update_POS()
-        self.progress.emit(55)
+        self.progress.emit(60)
 
         self.reportResponse = Reports(credentials=self.credentials, refresh_token=self.refresh_token).get_report(self.createReportResponse.payload['reportId'])
         while('reportDocumentId' not in self.reportResponse.payload):
@@ -98,11 +103,11 @@ class Worker(QObject):
 
         self.task.emit('Updating Amazon List')
         self.update_amazon()
-        self.progress.emit(60)
+        self.progress.emit(65)
 
         self.task.emit('Updating Amazon unshipped list')
         self.update_amazon_ord()
-        self.progress.emit(65)
+        self.progress.emit(70)
 
         self.update_history.to_excel(self._root_path+'appdata/update_history.xlsx', index=False)
 
@@ -739,6 +744,86 @@ class Worker(QObject):
         # self.update_history.loc[self.update_history['Initial']==comp_name, 'Date'] = datetime.date.today().strftime("%d-%b")
         # QMessageBox.information(self, "Info", "Updated")
 
+    def update_MANE(self):
+        if self._check_state['MANE'] == 0:
+            with open(self._root_path+'appdata/gmail_auth.json') as f:
+                temp = json.load(f)
+                email_user = temp['username']
+                email_password = temp['password']
+            
+            mail = imaplib.IMAP4_SSL('imap.gmail.com')
+            mail.login(email_user, email_password)
+            mail.select('"[Gmail]/All Mail"')
+
+            status, messages = mail.search(None, f'SUBJECT {self.MANE_mail["SUBJECT"]} FROM {self.MANE_mail["FROM"]}')
+
+            if status == 'OK':
+                # Convert messages list from bytes to list of email IDs
+                messages = messages[0].split()
+
+                res, msg = mail.fetch(messages[-1], '(RFC822)')
+
+                decoded_msg = email.message_from_bytes(msg[0][1])
+                date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+                # self.update_history.loc[self.update_history['Initial']=='MANE', 'Date'] = date_recieved.strftime("%d-%b")
+
+                for part in decoded_msg.walk():
+                    if part.get('Content-Disposition'):
+                        filename = part.get_filename()
+                        if filename.endswith('.xlsx'):
+                            with open(self._root_path+'inv_data/MANE_inv.xlsx', 'wb') as f:
+                                f.write(part.get_payload(decode=True))
+                            print(f'MANE - {filename} downloaded')
+            else:
+                print("Failed to retrieve emails.")
+
+            mail.close()
+            mail.logout()
+
+        # load new inv data
+        new_inv = pd.read_excel(self._root_path+'inv_data\MANE_inv.xlsx', dtype={'Barcode':str})
+
+        # get column name for choose upc / company inventory / description / extended description columns
+        column_list = list(new_inv.columns)
+
+        # Select Company name
+        # company_list = ['AL', 'VF', 'BY', 'OUTRE','HZ']
+        comp_name = 'MANE'
+
+        # Select UPC column
+        itemlookupcode = 'Barcode'
+
+        # Select Company Inventory column
+        comp_inv = 'AQOH'
+
+        # Select Description column
+        description = 'Item'
+
+        # Select Extended Description column
+        ext_desc = 'Color'
+
+        # Merge needed columns
+        new_inv = new_inv[[itemlookupcode, comp_inv, description, ext_desc]]
+        new_inv.insert(0, 'Company', comp_name)
+
+        # rename columns
+        new_inv.columns =self.column_name
+
+        # pre processing
+        new_inv = new_inv.dropna(subset=['UPC', 'company Inventory'])
+        new_inv['company Inventory'] = new_inv['company Inventory'].astype('int')
+        new_inv['UPC'] = new_inv['UPC'].astype('int64')
+        new_inv.loc[new_inv['company Inventory']<10, 'company Inventory'] = 0
+
+        # delete exist data
+        self.all_upc_inv.drop(self.all_upc_inv[self.all_upc_inv['COMPAY']==comp_name].index, inplace=True)
+
+        # append data
+        self.all_upc_inv = pd.concat([self.all_upc_inv, new_inv])
+
+        # reset index
+        self.all_upc_inv = self.all_upc_inv.reset_index(drop=True)
+
     def update_backord(self):
         # filename = QFileDialog.getOpenFileName(self, "Select File backorded_list", "./", "Any Files (*)")
         # backorder_list = pd.read_csv(filename[0], dtype={'upc':str})
@@ -972,7 +1057,8 @@ class InvUpdateWindow(QWidget):
                        'NBF': self.ui.checkBox_NBF.isChecked(),
                        'OUTRE': self.ui.checkBox_OUTRE.isChecked(),
                        'HZ': self.ui.checkBox_HZ.isChecked(),
-                       'SNG': self.ui.checkBox_SNG.isChecked()}
+                       'SNG': self.ui.checkBox_SNG.isChecked(),
+                       'MANE': self.ui.checkBox_MANE.isChecked()}
 
         self.thread = QThread()
         self.worker = Worker(self._root_path, check_state)
