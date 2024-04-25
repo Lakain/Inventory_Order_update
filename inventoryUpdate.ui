@@ -136,9 +136,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_bord">
+        <widget class="QCheckBox" name="checkBox_MANE">
          <property name="text">
-          <string>Backorder List</string>
+          <string>MANE - MANE</string>
          </property>
         </widget>
        </item>
@@ -146,9 +146,22 @@
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_4">
-       <property name="bottomMargin">
-        <number>155</number>
+       <property name="spacing">
+        <number>6</number>
        </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>132</number>
+       </property>
+       <item>
+        <widget class="QCheckBox" name="checkBox_bord">
+         <property name="text">
+          <string>Backorder List</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QCheckBox" name="checkBox_POS">
          <property name="text">

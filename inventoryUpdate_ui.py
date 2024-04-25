@@ -98,17 +98,23 @@ class Ui_Form(object):
 
         self.verticalLayout.addWidget(self.checkBox_SNG)
 
-        self.checkBox_bord = QCheckBox(Form)
-        self.checkBox_bord.setObjectName(u"checkBox_bord")
+        self.checkBox_MANE = QCheckBox(Form)
+        self.checkBox_MANE.setObjectName(u"checkBox_MANE")
 
-        self.verticalLayout.addWidget(self.checkBox_bord)
+        self.verticalLayout.addWidget(self.checkBox_MANE)
 
 
         self.horizontalLayout.addLayout(self.verticalLayout)
 
         self.verticalLayout_4 = QVBoxLayout()
+        self.verticalLayout_4.setSpacing(6)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(-1, -1, -1, 155)
+        self.verticalLayout_4.setContentsMargins(-1, 0, -1, 132)
+        self.checkBox_bord = QCheckBox(Form)
+        self.checkBox_bord.setObjectName(u"checkBox_bord")
+
+        self.verticalLayout_4.addWidget(self.checkBox_bord)
+
         self.checkBox_POS = QCheckBox(Form)
         self.checkBox_POS.setObjectName(u"checkBox_POS")
 
@@ -165,6 +171,7 @@ class Ui_Form(object):
         self.checkBox_OUTRE.setText(QCoreApplication.translate("Form", u"OUTRE - SUNTAIYANG", None))
         self.checkBox_HZ.setText(QCoreApplication.translate("Form", u"HZ - SENSATIONNEL", None))
         self.checkBox_SNG.setText(QCoreApplication.translate("Form", u"SNG - SHAKE-N-GO", None))
+        self.checkBox_MANE.setText(QCoreApplication.translate("Form", u"MANE - MANE", None))
         self.checkBox_bord.setText(QCoreApplication.translate("Form", u"Backorder List", None))
         self.checkBox_POS.setText(QCoreApplication.translate("Form", u"POS Inventory", None))
         self.checkBox_Amazon.setText(QCoreApplication.translate("Form", u"Amazon Unshipped", None))

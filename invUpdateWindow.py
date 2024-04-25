@@ -38,6 +38,7 @@ class Worker(QObject):
             self.OUTRE_mail = temp['OUTRE']
             self.HZ_mail = temp['HZ']
             self.SNG_mail = temp['SNG']
+            self.MANE_mail = temp['MANE']
             
     def run(self):
         # InvUpdateWindow.start_update(self)
@@ -744,6 +745,40 @@ class Worker(QObject):
         # QMessageBox.information(self, "Info", "Updated")
 
     def update_MANE(self):
+        if self._check_state['MANE'] == 0:
+            with open(self._root_path+'appdata/gmail_auth.json') as f:
+                temp = json.load(f)
+                email_user = temp['username']
+                email_password = temp['password']
+            
+            mail = imaplib.IMAP4_SSL('imap.gmail.com')
+            mail.login(email_user, email_password)
+            mail.select('"[Gmail]/All Mail"')
+
+            status, messages = mail.search(None, f'SUBJECT {self.MANE_mail["SUBJECT"]} FROM {self.MANE_mail["FROM"]}')
+
+            if status == 'OK':
+                # Convert messages list from bytes to list of email IDs
+                messages = messages[0].split()
+
+                res, msg = mail.fetch(messages[-1], '(RFC822)')
+
+                decoded_msg = email.message_from_bytes(msg[0][1])
+                date_recieved = datetime.datetime.strptime(decoded_msg.get('Date'), "%a, %d %b %Y %X %z")
+                # self.update_history.loc[self.update_history['Initial']=='MANE', 'Date'] = date_recieved.strftime("%d-%b")
+
+                for part in decoded_msg.walk():
+                    if part.get('Content-Disposition'):
+                        filename = part.get_filename()
+                        if filename.endswith('.xlsx'):
+                            with open(self._root_path+'inv_data/MANE_inv.xlsx', 'wb') as f:
+                                f.write(part.get_payload(decode=True))
+                            print(f'MANE - {filename} downloaded')
+            else:
+                print("Failed to retrieve emails.")
+
+            mail.close()
+            mail.logout()
 
         # load new inv data
         new_inv = pd.read_excel(self._root_path+'inv_data\MANE_inv.xlsx', dtype={'Barcode':str})
@@ -1022,7 +1057,8 @@ class InvUpdateWindow(QWidget):
                        'NBF': self.ui.checkBox_NBF.isChecked(),
                        'OUTRE': self.ui.checkBox_OUTRE.isChecked(),
                        'HZ': self.ui.checkBox_HZ.isChecked(),
-                       'SNG': self.ui.checkBox_SNG.isChecked()}
+                       'SNG': self.ui.checkBox_SNG.isChecked(),
+                       'MANE': self.ui.checkBox_MANE.isChecked()}
 
         self.thread = QThread()
         self.worker = Worker(self._root_path, check_state)
