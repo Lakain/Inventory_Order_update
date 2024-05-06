@@ -19,6 +19,7 @@ class orderForm(QWidget):
         df = order_df.merge(df[['sku','ORD', 'DESCRIPTION', 'order-id']], on=['sku', 'order-id'], how='left')
         df = df[['sku','ORD', 'DESCRIPTION', 'order-id']]
         df['ORD'] = pd.to_numeric(df['ORD'], downcast='integer')
+        df.sort_values('sku', inplace=True, ignore_index=True)
 
         self.model = PandasModel(df)
         self.proxymodel = QSortFilterProxyModel()
