@@ -16,8 +16,8 @@ class orderForm(QWidget):
         self.ui.setupUi(self)
         self._root_path = root_path
 
-        df = order_df.merge(df[['sku','ORD', 'DESCRIPTION', 'order-id']], on=['sku', 'order-id'], how='left')
-        df = df[['sku','ORD', 'DESCRIPTION', 'order-id']]
+        df = order_df.merge(df[['sku','ORD', 'DESCRIPTION','product-id', 'order-id']], on=['sku', 'order-id'], how='left')
+        df = df[['sku','ORD', 'DESCRIPTION','product-id', 'order-id']]
         df['ORD'] = pd.to_numeric(df['ORD'], downcast='integer')
         df.sort_values('sku', inplace=True, ignore_index=True)
 
