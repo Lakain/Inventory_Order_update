@@ -36,14 +36,18 @@ class orderForm(QWidget):
         new_history['order-id'] = self.model._data['order-id']
         history = pd.concat([history, new_history], ignore_index=True)
         history.to_excel(self._root_path+'appdata/order_history.xlsx', index=False)
-        print(history)
-        self.model._data.style.set_properties(border="thin solid black").to_excel(self._root_path+'appdata/orderForm.xlsx', index=False, engine='openpyxl', startrow=2)
+        # print(history.tail(10))
+        
+        # self.model._data.style.set_properties(border="thin solid black").to_excel(self._root_path+'appdata/orderForm.xlsx', index=False, engine='openpyxl', startrow=2)
+        new_df = self.model._data[['sku','ORD', 'DESCRIPTION', 'product-id']]
+        grouped_df = new_df.groupby(['sku', 'DESCRIPTION', 'product-id']).sum()
+        grouped_df.style.set_properties(border="thin solid black").to_excel(self._root_path+'appdata/orderForm.xlsx', engine='openpyxl', startrow=2)
         
         workbook= openpyxl.load_workbook(self._root_path+'/appdata/orderForm.xlsx')
         # workbook= openpyxl.load_workbook(os.getcwd()+'/appdata/orderForm.xlsx')
         worksheet = workbook.get_sheet_by_name('Sheet1')
         worksheet['A1'] = datetime.date.today().strftime("%m/%d/%y") +" 7 MILE (651-290-0362)"
         workbook.save(self._root_path+'appdata/orderForm.xlsx')
-        
+
         os.system('"'+self._root_path+'/appdata/orderForm.xlsx"')
         # os.system('"'+os.getcwd()+'/appdata/orderForm.xlsx"')
