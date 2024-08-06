@@ -179,6 +179,9 @@ class Worker(QObject):
         # temp2 = pd.read_excel(filename[0])
         temp2 = pd.read_excel(self._root_path+'inv_data\AL_inv.xls')
 
+        temp1.columns=['ItemCode', 'ItemCodeDesc', 'Stock Lvl', 'OnHand Customer', 'AliasItemNo', 'StandardUnitPrice']
+        temp2.columns=['ItemCode', 'ItemCodeDesc', 'Stock Lvl', 'OnHand Customer', 'AliasItemNo', 'StandardUnitPrice']
+
         new_inv = pd.concat([temp1, temp2], ignore_index=True)
         # get column name for choose upc / company inventory / description / extended description columns
         column_list = list(new_inv.columns)
