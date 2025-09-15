@@ -4,10 +4,33 @@ from sp_api.api import Reports
 from sp_api.base.reportTypes import ReportType
 import pandas as pd
 import datetime, json, webbrowser, email, imaplib, os
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 from inventoryUpdate_ui import Ui_Form
 from time import sleep
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
+
+# 1) Define scope for full Gmail access via IMAP/SMTP
+SCOPES = ['https://mail.google.com/']
+
+def get_credentials(root_path):
+    creds = None
+    # 2) Load existing tokens, if any
+    if os.path.exists(root_path+'appdata/gmail_token.json'):
+        creds = Credentials.from_authorized_user_file(root_path+'appdata/gmail_token.json', SCOPES)
+    # 3) If no valid credentials, run the flow
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(root_path+'appdata/client_secret.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # 4) Save the credentials for the next run
+        with open(root_path+'appdata/gmail_token.json', 'w') as token:
+            token.write(creds.to_json())
+    return creds
 
 
 class Worker(QObject):
@@ -132,13 +155,17 @@ class Worker(QObject):
 
     def update_AL(self):
         if self._check_state['AL'] == 0:
+            creds = get_credentials(self._root_path)
+
             with open(self._root_path+'appdata/gmail_auth.json') as f:
                 temp = json.load(f)
                 email_user = temp['username']
                 email_password = temp['password']
+            
+            auth_string = f"user={email_user}\x01auth=Bearer {creds.token}\x01\x01"
 
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(email_user, email_password)
+            mail.authenticate('XOAUTH2', lambda x: auth_string)
             mail.select('"[Gmail]/All Mail"')
             
             status, messages = mail.search(None, f'SUBJECT {self.AL_mail["SUBJECT"]} FROM {self.AL_mail["FROM"]}')
@@ -229,13 +256,17 @@ class Worker(QObject):
 
     def update_VF(self):
         if self._check_state['VF'] == 0:
+            creds = get_credentials(self._root_path)
+
             with open(self._root_path+'appdata/gmail_auth.json') as f:
                 temp = json.load(f)
                 email_user = temp['username']
                 email_password = temp['password']
+            
+            auth_string = f"user={email_user}\x01auth=Bearer {creds.token}\x01\x01"
 
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(email_user, email_password)
+            mail.authenticate('XOAUTH2', lambda x: auth_string)
             mail.select('"[Gmail]/All Mail"')
 
             status, messages = mail.search(None, f'SUBJECT {self.VF_mail["SUBJECT"]} FROM {self.VF_mail["FROM"]}')
@@ -317,13 +348,17 @@ class Worker(QObject):
 
     def update_BY(self):
         if self._check_state['BY'] == 0:
+            creds = get_credentials(self._root_path)
+
             with open(self._root_path+'appdata/gmail_auth.json') as f:
                 temp = json.load(f)
                 email_user = temp['username']
                 email_password = temp['password']
+            
+            auth_string = f"user={email_user}\x01auth=Bearer {creds.token}\x01\x01"
 
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(email_user, email_password)
+            mail.authenticate('XOAUTH2', lambda x: auth_string)
             mail.select('"[Gmail]/All Mail"')
 
             status, messages = mail.search(None, f'SUBJECT {self.BY_mail["SUBJECT"]} FROM {self.BY_mail["FROM"]}')
@@ -402,13 +437,17 @@ class Worker(QObject):
 
     def update_NBF(self):
         if self._check_state['NBF'] == 0:
+            creds = get_credentials(self._root_path)
+
             with open(self._root_path+'appdata/gmail_auth.json') as f:
                 temp = json.load(f)
                 email_user = temp['username']
                 email_password = temp['password']
             
+            auth_string = f"user={email_user}\x01auth=Bearer {creds.token}\x01\x01"
+
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(email_user, email_password)
+            mail.authenticate('XOAUTH2', lambda x: auth_string)
             mail.select('"[Gmail]/All Mail"')
 
             status, messages = mail.search(None, f'SUBJECT {self.NBF_mail["SUBJECT"]} FROM {self.NBF_mail["FROM"]}')
@@ -485,13 +524,17 @@ class Worker(QObject):
 
     def update_OUTRE(self):
         if self._check_state['OUTRE'] == 0:
+            creds = get_credentials(self._root_path)
+
             with open(self._root_path+'appdata/gmail_auth.json') as f:
                 temp = json.load(f)
                 email_user = temp['username']
                 email_password = temp['password']
+            
+            auth_string = f"user={email_user}\x01auth=Bearer {creds.token}\x01\x01"
 
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(email_user, email_password)
+            mail.authenticate('XOAUTH2', lambda x: auth_string)
             mail.select('Company/Outre')
 
             status, messages = mail.search(None, f'SUBJECT {self.OUTRE_mail["SUBJECT"]}')
@@ -571,13 +614,17 @@ class Worker(QObject):
 
     def update_HZ(self):
         if self._check_state['HZ'] == 0:
+            creds = get_credentials(self._root_path)
+
             with open(self._root_path+'appdata/gmail_auth.json') as f:
                 temp = json.load(f)
                 email_user = temp['username']
                 email_password = temp['password']
+            
+            auth_string = f"user={email_user}\x01auth=Bearer {creds.token}\x01\x01"
 
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(email_user, email_password)
+            mail.authenticate('XOAUTH2', lambda x: auth_string)
             mail.select('Company/Sensationnel')
 
             status, messages = mail.search(None, f'SUBJECT {self.HZ_mail["SUBJECT"]}')
@@ -658,13 +705,17 @@ class Worker(QObject):
 
     def update_SNG(self):
         if self._check_state['SNG'] == 0:
+            creds = get_credentials(self._root_path)
+
             with open(self._root_path+'appdata/gmail_auth.json') as f:
                 temp = json.load(f)
                 email_user = temp['username']
                 email_password = temp['password']
+            
+            auth_string = f"user={email_user}\x01auth=Bearer {creds.token}\x01\x01"
 
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(email_user, email_password)
+            mail.authenticate('XOAUTH2', lambda x: auth_string)
             mail.select('"[Gmail]/All Mail"')
 
             status, messages = mail.search(None, f'SUBJECT {self.SNG_mail["SUBJECT"]} FROM {self.SNG_mail["FROM"]}')
@@ -749,13 +800,17 @@ class Worker(QObject):
 
     def update_MANE(self):
         if self._check_state['MANE'] == 0:
+            creds = get_credentials(self._root_path)
+
             with open(self._root_path+'appdata/gmail_auth.json') as f:
                 temp = json.load(f)
                 email_user = temp['username']
                 email_password = temp['password']
             
+            auth_string = f"user={email_user}\x01auth=Bearer {creds.token}\x01\x01"
+
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(email_user, email_password)
+            mail.authenticate('XOAUTH2', lambda x: auth_string)
             mail.select('"[Gmail]/All Mail"')
 
             status, messages = mail.search(None, f'SUBJECT {self.MANE_mail["SUBJECT"]} FROM {self.MANE_mail["FROM"]}')
@@ -852,6 +907,8 @@ class Worker(QObject):
         # self.button_dup.setDisabled(True)
 
     def update_POS(self):
+        
+        print(self.all_upc_inv[self.all_upc_inv['UPC']=='842045006254'])
         with open(self._root_path+'appdata/db_auth.json') as f:
             temp = json.load(f)
             server = temp['server']
