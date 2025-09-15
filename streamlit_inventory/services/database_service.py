@@ -17,7 +17,19 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseService:
-    """Service for managing database connections and operations."""
+    """
+    READ-ONLY Service for managing POS database connections and operations.
+    
+    IMPORTANT: This service is designed to ONLY READ from the POS system.
+    All write operations (UPDATE, INSERT, DELETE, BACKUP, RESTORE) are disabled
+    to prevent any accidental modifications to the POS database.
+    
+    Supported operations:
+    - Read inventory data
+    - Read sales data  
+    - Test connections
+    - Get connection status
+    """
     
     def __init__(self, root_path: str = ''):
         self.root_path = root_path
@@ -175,61 +187,33 @@ class DatabaseService:
     
     def update_pos_inventory(self, inventory_data: pd.DataFrame) -> bool:
         """
-        Update POS inventory with new data.
-        This would contain the logic for updating inventory in the POS system.
+        DISABLED: This method is intentionally disabled to prevent writes to POS system.
+        The system is designed to be READ-ONLY for POS data.
         """
-        try:
-            # This is a placeholder for the actual inventory update logic
-            # The original code doesn't show the POS update mechanism clearly
-            # This would need to be implemented based on the specific POS system requirements
-            logger.info(f"Updating POS inventory with {len(inventory_data)} records")
-            
-            # Example implementation - would need actual update logic
-            with self.get_connection() as conn:
-                # Update logic would go here
-                # This might involve updating Item.SubDescription2 or other fields
-                pass
-            
-            return True
-        except Exception as e:
-            logger.error(f"Error updating POS inventory: {e}")
-            return False
+        logger.warning("update_pos_inventory() called but is DISABLED - POS system is READ-ONLY")
+        raise NotImplementedError(
+            "POS inventory updates are disabled. This system only reads from POS, never writes to it."
+        )
     
     def backup_database(self, backup_path: str) -> bool:
-        """Create database backup."""
-        try:
-            backup_query = f"""
-            BACKUP DATABASE [{self.database}] 
-            TO DISK = '{backup_path}'
-            WITH FORMAT, INIT;
-            """
-            
-            with self.get_connection() as conn:
-                conn.execute(text(backup_query))
-            
-            logger.info(f"Database backup created: {backup_path}")
-            return True
-        except Exception as e:
-            logger.error(f"Error creating database backup: {e}")
-            return False
+        """
+        DISABLED: Database backup is disabled to prevent any write operations to POS system.
+        The system is designed to be READ-ONLY for POS data.
+        """
+        logger.warning("backup_database() called but is DISABLED - POS system is READ-ONLY")
+        raise NotImplementedError(
+            "Database backup is disabled. This system only reads from POS, never writes to it."
+        )
     
     def restore_database(self, backup_path: str) -> bool:
-        """Restore database from backup."""
-        try:
-            restore_query = f"""
-            RESTORE DATABASE [{self.database}] 
-            FROM DISK = '{backup_path}'
-            WITH REPLACE;
-            """
-            
-            with self.get_connection() as conn:
-                conn.execute(text(restore_query))
-            
-            logger.info(f"Database restored from: {backup_path}")
-            return True
-        except Exception as e:
-            logger.error(f"Error restoring database: {e}")
-            return False
+        """
+        DISABLED: Database restore is disabled to prevent any write operations to POS system.
+        The system is designed to be READ-ONLY for POS data.
+        """
+        logger.warning("restore_database() called but is DISABLED - POS system is READ-ONLY")
+        raise NotImplementedError(
+            "Database restore is disabled. This system only reads from POS, never writes to it."
+        )
     
     def get_connection_status(self) -> Dict[str, Any]:
         """Get database connection status information."""

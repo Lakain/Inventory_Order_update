@@ -61,12 +61,125 @@ class DataService:
     def process_supplier_file(self, supplier_code: str, file_path: Optional[str] = None) -> pd.DataFrame:
         """
         Process supplier inventory file using supplier-specific processor.
+        Includes validation and standardization.
         """
         if supplier_code not in self._supplier_processors:
             raise ValueError(f"Unknown supplier code: {supplier_code}")
         
-        processor = self._supplier_processors[supplier_code]
-        return processor.process_file(file_path)
+        try:
+            # Process file using supplier-specific processor
+            processor = self._supplier_processors[supplier_code]
+            processed_data = processor.process_file(file_path)
+            
+            # Apply additional standardization
+            processed_data = self.standardize_supplier_data(processed_data, supplier_code)
+            
+            # Clean the data
+            processed_data = self.clean_data(processed_data)
+            
+            # Validate the processed data
+            is_valid, errors = self.validate_data(processed_data, self.column_names)
+            if not is_valid:
+                logger.warning(f"Data validation issues for {supplier_code}: {errors}")
+            
+            return processed_data
+            
+        except Exception as e:
+            logger.error(f"Error processing supplier file for {supplier_code}: {e}")
+            raise
+    
+    def transform_data_types(self, data: pd.DataFrame, type_mappings: Dict[str, str]) -> pd.DataFrame:
+        """
+        Transform data types based on mapping specifications.
+        Handles common data type conversions from original code.
+        """
+        transformed_data = data.copy()
+        
+        for column, target_type in type_mappings.items():
+            if column not in transformed_data.columns:
+                continue
+                
+            try:
+                if target_type == 'string':
+                    transformed_data[column] = transformed_data[column].astype(str)
+                elif target_type == 'int':
+                    transformed_data[column] = pd.to_numeric(
+                        transformed_data[column], errors='coerce'
+                    ).fillna(0).astype(int)
+                elif target_type == 'int64':
+                    transformed_data[column] = pd.to_numeric(
+                        transformed_data[column], errors='coerce'
+                    ).fillna(0).astype('int64')
+                elif target_type == 'float':
+                    transformed_data[column] = pd.to_numeric(
+                        transformed_data[column], errors='coerce'
+                    ).fillna(0.0)
+                elif target_type == 'datetime':
+                    transformed_data[column] = pd.to_datetime(
+                        transformed_data[column], errors='coerce'
+                    )
+                    
+            except Exception as e:
+                logger.warning(f"Failed to convert column {column} to {target_type}: {e}")
+        
+        return transformed_data
+    
+    def process_multiple_suppliers(self, supplier_codes: List[str], 
+                                 progress_callback: Optional[callable] = None) -> pd.DataFrame:
+        """
+        Process multiple suppliers and combine their data.
+        Useful for batch processing operations.
+        """
+        all_supplier_data = []
+        total_suppliers = len(supplier_codes)
+        
+        for i, supplier_code in enumerate(supplier_codes):
+            try:
+                if progress_callback:
+                    progress_callback(f"Processing {supplier_code}", i / total_suppliers)
+                
+                supplier_data = self.process_supplier_file(supplier_code)
+                all_supplier_data.append(supplier_data)
+                
+                logger.info(f"Successfully processed {supplier_code}: {len(supplier_data)} records")
+                
+            except Exception as e:
+                logger.error(f"Failed to process {supplier_code}: {e}")
+                # Continue with other suppliers even if one fails
+                continue
+        
+        if not all_supplier_data:
+            logger.warning("No supplier data was successfully processed")
+            return pd.DataFrame(columns=self.column_names)
+        
+        # Combine all supplier data
+        combined_data = pd.concat(all_supplier_data, ignore_index=True)
+        
+        if progress_callback:
+            progress_callback("Combining supplier data", 1.0)
+        
+        logger.info(f"Combined data from {len(all_supplier_data)} suppliers: {len(combined_data)} total records")
+        return combined_data
+    
+    def get_supplier_summary(self, data: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
+        """
+        Generate summary statistics for each supplier in the dataset.
+        """
+        if 'COMPAY' not in data.columns:
+            return {}
+        
+        summary = {}
+        for supplier in data['COMPAY'].unique():
+            supplier_data = data[data['COMPAY'] == supplier]
+            summary[supplier] = {
+                'record_count': len(supplier_data),
+                'unique_upcs': supplier_data['UPC'].nunique() if 'UPC' in data.columns else 0,
+                'total_inventory': supplier_data['company Inventory'].sum() if 'company Inventory' in data.columns else 0,
+                'avg_inventory': supplier_data['company Inventory'].mean() if 'company Inventory' in data.columns else 0,
+                'zero_inventory_items': (supplier_data['company Inventory'] == 0).sum() if 'company Inventory' in data.columns else 0
+            }
+        
+        return summary
     
     def update_supplier_inventory(self, all_inventory: pd.DataFrame, supplier_code: str, 
                                 new_data: pd.DataFrame) -> pd.DataFrame:
@@ -314,7 +427,10 @@ class DataService:
             return False
     
     def validate_data(self, data: pd.DataFrame, required_columns: List[str]) -> Tuple[bool, List[str]]:
-        """Validate data structure and content."""
+        """
+        Validate data structure and content.
+        Enhanced validation for supplier inventory data.
+        """
         errors = []
         
         # Check required columns
@@ -330,12 +446,42 @@ class DataService:
         critical_columns = ['UPC', 'company Inventory'] if 'UPC' in data.columns else []
         for col in critical_columns:
             if col in data.columns and data[col].isnull().any():
-                errors.append(f"Null values found in critical column: {col}")
+                null_count = data[col].isnull().sum()
+                errors.append(f"Null values found in critical column '{col}': {null_count} records")
+        
+        # Validate UPC format (should be numeric or convertible to numeric)
+        if 'UPC' in data.columns:
+            try:
+                # Test if UPC can be converted to numeric (allowing for string representation)
+                test_upc = pd.to_numeric(data['UPC'], errors='coerce')
+                invalid_upc_count = test_upc.isnull().sum()
+                if invalid_upc_count > 0:
+                    errors.append(f"Invalid UPC format in {invalid_upc_count} records")
+            except Exception as e:
+                errors.append(f"UPC validation error: {str(e)}")
+        
+        # Validate inventory quantities (should be non-negative integers)
+        if 'company Inventory' in data.columns:
+            try:
+                non_numeric_inv = pd.to_numeric(data['company Inventory'], errors='coerce').isnull().sum()
+                if non_numeric_inv > 0:
+                    errors.append(f"Non-numeric inventory values in {non_numeric_inv} records")
+                
+                # Check for negative inventory values
+                numeric_inv = pd.to_numeric(data['company Inventory'], errors='coerce')
+                negative_inv = (numeric_inv < 0).sum()
+                if negative_inv > 0:
+                    errors.append(f"Negative inventory values in {negative_inv} records")
+            except Exception as e:
+                errors.append(f"Inventory validation error: {str(e)}")
         
         return len(errors) == 0, errors
     
     def clean_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Clean and standardize data."""
+        """
+        Clean and standardize data.
+        Enhanced cleaning based on patterns from original update methods.
+        """
         cleaned_data = data.copy()
         
         # Remove leading/trailing whitespace from string columns
@@ -343,10 +489,139 @@ class DataService:
         for col in string_columns:
             cleaned_data[col] = cleaned_data[col].astype(str).str.strip()
         
-        # Handle missing values
-        cleaned_data.fillna('', inplace=True)
+        # Handle missing values appropriately by column type
+        for col in cleaned_data.columns:
+            if col in ['UPC', 'DESCRIPTION', 'EXTENDED DESCRIPTION', 'COMPAY']:
+                # String columns - fill with empty string
+                cleaned_data[col] = cleaned_data[col].fillna('')
+            elif col == 'company Inventory':
+                # Inventory column - fill with 0
+                cleaned_data[col] = cleaned_data[col].fillna(0)
+        
+        # Standardize UPC format (ensure consistent string representation)
+        if 'UPC' in cleaned_data.columns:
+            # Convert to string, removing any decimal points from float representation
+            cleaned_data['UPC'] = cleaned_data['UPC'].astype(str).str.replace('.0', '', regex=False)
+        
+        # Standardize inventory values
+        if 'company Inventory' in cleaned_data.columns:
+            # Ensure inventory is numeric and non-negative
+            cleaned_data['company Inventory'] = pd.to_numeric(
+                cleaned_data['company Inventory'], errors='coerce'
+            ).fillna(0).astype(int)
+            # Set negative values to 0
+            cleaned_data.loc[cleaned_data['company Inventory'] < 0, 'company Inventory'] = 0
         
         return cleaned_data
+    
+    def standardize_supplier_data(self, data: pd.DataFrame, supplier_code: str) -> pd.DataFrame:
+        """
+        Apply supplier-specific data standardization rules.
+        Extracted from common patterns in update_XX() methods.
+        """
+        standardized_data = data.copy()
+        
+        # Apply supplier-specific rules based on original logic
+        if supplier_code in ['VF', 'BY', 'MANE']:
+            # These suppliers set inventory to 0 if less than 10
+            mask = standardized_data['company Inventory'] < 10
+            standardized_data.loc[mask, 'company Inventory'] = 0
+        
+        elif supplier_code == 'NBF':
+            # NBF uses letter codes for inventory levels
+            inventory_mapping = {'A': 20, 'B': 5, 'C': 0, 'X': 0}
+            standardized_data['company Inventory'] = standardized_data['company Inventory'].replace(inventory_mapping).infer_objects(copy=False)
+        
+        elif supplier_code in ['OUTRE', 'HZ', 'SNG']:
+            # These suppliers use Y/N for availability
+            availability_mapping = {'Y': 20, 'N': 0}
+            standardized_data['company Inventory'] = standardized_data['company Inventory'].replace(availability_mapping).infer_objects(copy=False)
+        
+        return standardized_data
+    
+    def process_pos_data(self, pos_data: pd.DataFrame, all_inventory: pd.DataFrame) -> pd.DataFrame:
+        """
+        Process POS data with inventory integration.
+        Extracted from invUpdateWindow.py update_POS() method.
+        """
+        try:
+            # Fill missing values - exact pattern from original
+            pos_data.fillna('', inplace=True)
+            
+            # Process Display column - exact logic from original
+            pos_data['Display'] = pos_data['Display'].str.strip()
+            
+            # Handle parenthetical expressions in Display column
+            index = pos_data.loc[pos_data['Display'].str.contains(r'\(\d*\)', regex=True)].index
+            pos_data.loc[index, 'Display'] = pos_data.loc[index, 'Display'].str.replace('(', ' ').str.strip(')').str.split()
+            
+            for i in index:
+                try:
+                    pos_data.loc[i, 'Display'] = str(sum([eval(a) for a in pos_data.loc[i, 'Display']]))
+                except:
+                    pos_data.loc[i, 'Display'] = '0'
+            
+            # Handle empty Display values
+            pos_data.loc[pos_data['Display'] == '', 'Display'] = '0'
+            pos_data['Display'] = pos_data['Display'].astype(int)
+            
+            # Add empty column A (from original pattern)
+            pos_data['A'] = ''
+            
+            # Calculate FIN QTY - exact formula from original
+            pos_data['FIN QTY'] = pos_data['Qty On Hand'] + pos_data['Display']
+            
+            # Merge company inventory data - exact pattern from original
+            comp_inv_data = all_inventory[['UPC', 'company Inventory']].rename(
+                columns={'UPC': 'Item Lookup Code'}
+            )
+            
+            pos_data['Item Lookup Code'] = pos_data['Item Lookup Code'].astype(str)
+            comp_inv_data['Item Lookup Code'] = comp_inv_data['Item Lookup Code'].astype(str)
+            
+            # Get today's date for column naming
+            date_str = datetime.date.today().strftime("%m%d")
+            comp_inv_col = f'Comp Inv {date_str}'
+            
+            # Merge and fill missing values
+            merged_comp_inv = pos_data.merge(comp_inv_data, how='left', on='Item Lookup Code')['company Inventory']
+            pos_data[comp_inv_col] = merged_comp_inv.fillna(0)
+            
+            logger.info(f"Processed POS data: {len(pos_data)} records")
+            return pos_data
+            
+        except Exception as e:
+            logger.error(f"Error processing POS data: {e}")
+            raise
+    
+    def get_data_quality_report(self, data: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Generate a data quality report for processed inventory data.
+        """
+        report = {
+            'total_records': len(data),
+            'columns': list(data.columns),
+            'missing_values': data.isnull().sum().to_dict(),
+            'data_types': data.dtypes.to_dict(),
+        }
+        
+        # Add specific checks for inventory data
+        if 'UPC' in data.columns:
+            report['unique_upcs'] = data['UPC'].nunique()
+            report['duplicate_upcs'] = len(data) - data['UPC'].nunique()
+        
+        if 'company Inventory' in data.columns:
+            report['inventory_stats'] = {
+                'min': data['company Inventory'].min(),
+                'max': data['company Inventory'].max(),
+                'mean': data['company Inventory'].mean(),
+                'zero_inventory_count': (data['company Inventory'] == 0).sum()
+            }
+        
+        if 'COMPAY' in data.columns:
+            report['suppliers'] = data['COMPAY'].value_counts().to_dict()
+        
+        return report
 
 
 class SupplierProcessor:
@@ -365,24 +640,28 @@ class AliciaProcessor(SupplierProcessor):
     """Processor for Alicia (AL) supplier files."""
     
     def process_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
-        """Process AL inventory files (both brs and regular inv)."""
+        """
+        Process AL inventory files (both brs and regular inv).
+        Extracted from invUpdateWindow.py update_AL() method.
+        """
         try:
-            # Load both files
+            # Load both files - exact pattern from original code
             temp1 = pd.read_excel(f'{self.root_path}inv_data/AL_brs inv.xls')
             temp2 = pd.read_excel(f'{self.root_path}inv_data/AL_inv.xls')
             
             # Combine files
             new_inv = pd.concat([temp1, temp2], ignore_index=True)
             
-            # Select and rename columns
+            # Select and rename columns - exact mapping from original
             new_inv = new_inv[['AliasItemNo', 'OnHand Customer', 'ItemCode', 'ItemCodeDesc']]
             new_inv.insert(0, 'Company', 'AL')
             new_inv.columns = self.column_names
             
-            # Clean data
+            # Pre-processing - exact pattern from original code
             new_inv = new_inv.dropna(subset=['UPC', 'company Inventory'])
             new_inv['company Inventory'] = new_inv['company Inventory'].astype('int')
             
+            logger.info(f"Processed AL inventory: {len(new_inv)} records")
             return new_inv
             
         except Exception as e:
@@ -394,26 +673,31 @@ class AmekorProcessor(SupplierProcessor):
     """Processor for Amekor (VF) supplier files."""
     
     def process_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
-        """Process VF inventory file."""
+        """
+        Process VF inventory file.
+        Extracted from invUpdateWindow.py update_VF() method.
+        """
         try:
+            # Load file with specific dtype - exact pattern from original
             new_inv = pd.read_excel(f'{self.root_path}inv_data/VF_Inventory.xls', dtype={'Barcode': str})
             
-            # Select and rename columns
+            # Select and rename columns - exact mapping from original
             new_inv = new_inv[['Barcode', 'On hand', 'Product ID', 'SKU']]
             new_inv.insert(0, 'Company', 'VF')
             
-            # Clean barcode data
+            # Clean barcode data - exact logic from original
             new_inv.loc[new_inv['Barcode'].str.isnumeric() == False, 'Barcode'] = pd.NA
             new_inv['Barcode'] = pd.to_numeric(new_inv['Barcode'], downcast='integer')
             
             new_inv.columns = self.column_names
             
-            # Clean data
+            # Pre-processing - exact pattern from original code
             new_inv = new_inv.dropna(subset=['UPC', 'company Inventory'])
             new_inv['company Inventory'] = new_inv['company Inventory'].astype('int')
             new_inv['UPC'] = new_inv['UPC'].astype('int64')
             new_inv.loc[new_inv['company Inventory'] < 10, 'company Inventory'] = 0
             
+            logger.info(f"Processed VF inventory: {len(new_inv)} records")
             return new_inv
             
         except Exception as e:
