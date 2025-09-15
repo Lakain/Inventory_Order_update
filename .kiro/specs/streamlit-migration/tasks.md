@@ -35,27 +35,40 @@
   - Create supplier-specific processor classes
   - _Requirements: 6.5_
 
-- [ ] 3. Implement core service layer
-- [ ] 3.1 Create database service
+- [x] 3. Implement core service layer
+
+
+
+
+
+- [x] 3.1 Create database service
+
+
   - Extract database connection logic from salesUpdateWindow.py
   - Implement DatabaseService class with connection pooling
   - Add methods for POS inventory updates and sales data retrieval
   - Include backup and restore functionality
   - _Requirements: 6.1, 8.2, 8.4_
 
-- [ ] 3.2 Create email service
+
+- [x] 3.2 Create email service
+
   - Extract email/IMAP logic from invUpdateWindow.py update methods (update_AL, update_VF, etc.)
   - Implement EmailService class with Gmail connection management
   - Add supplier-specific email search and attachment download methods
   - Include error handling and retry logic for email operations
   - _Requirements: 6.2, 8.1, 8.3_
 
-- [ ] 3.3 Create Amazon API service
+- [x] 3.3 Create Amazon API service
+
+
   - Extract Amazon SP-API logic from existing Worker class
   - Implement AmazonService class for orders and reports
   - Add rate limiting and error handling for API calls
   - Include async report generation and download functionality
   - _Requirements: 6.3, 8.1, 8.3_
+
+
 
 - [ ] 3.4 Create data processing service
   - Extract pandas data processing logic from various update methods
