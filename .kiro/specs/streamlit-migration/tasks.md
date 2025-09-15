@@ -25,7 +25,11 @@
 
 
 
-- [ ] 2.2 Create supplier configuration mapping
+- [x] 2.2 Create supplier configuration mapping
+
+
+
+
   - Map existing keyword_mailadd.json to structured SupplierConfig objects
   - Define column mappings and processing rules for each supplier (AL, VF, BY, NBF, OUTRE, HZ, SNG, MANE)
   - Create supplier-specific processor classes

@@ -295,6 +295,23 @@ class SupplierProcessorFactory:
         Returns:
             SupplierProcessor instance
         """
+        # Use specialized processors for specific suppliers
+        specialized_processors = {
+            'AL': AliciaProcessor,
+            'VF': VivicaFoxProcessor,
+            'BY': BoyangProcessor,
+            'NBF': ChadeProcessor,
+            'OUTRE': OutreProcessor,
+            'HZ': HarlemProcessor,
+            'SNG': SNGProcessor,
+            'MANE': ManeProcessor
+        }
+        
+        if supplier_code in specialized_processors:
+            processor_class = specialized_processors[supplier_code]
+            return processor_class(supplier_code, config)
+        
+        # Fallback to generic processors based on file format
         file_format = config.get('file_format', 'excel')
         
         if file_format == 'excel':
@@ -319,11 +336,115 @@ class AliciaProcessor(ExcelSupplierProcessor):
         return super().process_files(file_paths)
 
 
+class VivicaFoxProcessor(ExcelSupplierProcessor):
+    """Specialized processor for Vivica Fox (VF) with barcode handling."""
+    
+    def process_files(self, file_paths: List[str]) -> SupplierInventory:
+        """Process VF files with special barcode handling."""
+        if not file_paths:
+            raise ValueError(f"No files provided for {self.supplier_code}")
+        
+        file_path = file_paths[0]
+        if not os.path.exists(file_path):
+            raise ValueError(f"File not found: {file_path}")
+        
+        try:
+            # Load with specific dtype for Barcode column
+            df = pd.read_excel(file_path, dtype={'Barcode': str})
+            logger.info(f"Loaded {len(df)} rows from {file_path}")
+            
+        except Exception as e:
+            raise ValueError(f"Error reading Excel file {file_path}: {e}")
+        
+        # Standardize and clean data
+        standardized_df = self._standardize_dataframe(df)
+        
+        # VF-specific cleaning: handle non-numeric barcodes
+        standardized_df.loc[~standardized_df['UPC'].str.isnumeric(), 'UPC'] = pd.NA
+        standardized_df['UPC'] = pd.to_numeric(standardized_df['UPC'], downcast='integer')
+        
+        cleaned_df = self._clean_inventory_data(standardized_df)
+        
+        # VF-specific rule: set inventory to 0 if less than 10
+        cleaned_df.loc[cleaned_df['company Inventory'] < 10, 'company Inventory'] = 0
+        
+        # Convert to inventory items
+        items = self._dataframe_to_inventory_items(cleaned_df)
+        
+        return SupplierInventory(
+            supplier_code=self.supplier_code,
+            items=items,
+            last_sync=datetime.now(),
+            file_sources=[file_path]
+        )
+
+
+class BoyangProcessor(ExcelSupplierProcessor):
+    """Specialized processor for Boyang (BY) with skiprows handling."""
+    
+    def process_files(self, file_paths: List[str]) -> SupplierInventory:
+        """Process BY files with skiprows."""
+        if not file_paths:
+            raise ValueError(f"No files provided for {self.supplier_code}")
+        
+        file_path = file_paths[0]
+        if not os.path.exists(file_path):
+            raise ValueError(f"File not found: {file_path}")
+        
+        try:
+            # Skip first 3 rows as per existing logic
+            df = pd.read_excel(file_path, skiprows=3)
+            logger.info(f"Loaded {len(df)} rows from {file_path}")
+            
+        except Exception as e:
+            raise ValueError(f"Error reading Excel file {file_path}: {e}")
+        
+        # Standardize and clean data
+        standardized_df = self._standardize_dataframe(df)
+        cleaned_df = self._clean_inventory_data(standardized_df)
+        
+        # BY-specific rule: set inventory to 0 if less than 10
+        cleaned_df.loc[cleaned_df['company Inventory'] < 10, 'company Inventory'] = 0
+        
+        # Convert to inventory items
+        items = self._dataframe_to_inventory_items(cleaned_df)
+        
+        return SupplierInventory(
+            supplier_code=self.supplier_code,
+            items=items,
+            last_sync=datetime.now(),
+            file_sources=[file_path]
+        )
+
+
+class ChadeProcessor(ExcelSupplierProcessor):
+    """Specialized processor for Chade Fashions (NBF) with inventory mapping."""
+    
+    def _clean_inventory_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Clean NBF data with special inventory mapping."""
+        # Remove rows with missing UPC or inventory
+        df = df.dropna(subset=['UPC', 'company Inventory'])
+        
+        # NBF-specific inventory mapping
+        inventory_mapping = {'A': 20, 'B': 5, 'C': 0, 'X': 0}
+        df['company Inventory'] = df['company Inventory'].replace(inventory_mapping)
+        
+        return df
+
+
 class OutreProcessor(CSVSupplierProcessor):
     """Specialized processor for Outre with tab-separated values."""
     
     def process_files(self, file_paths: List[str]) -> SupplierInventory:
         """Process Outre CSV files with special formatting."""
+        return super().process_files(file_paths)
+
+
+class HarlemProcessor(CSVSupplierProcessor):
+    """Specialized processor for Harlem 125 (HZ) with tab-separated values."""
+    
+    def process_files(self, file_paths: List[str]) -> SupplierInventory:
+        """Process HZ CSV files with special formatting."""
         return super().process_files(file_paths)
 
 
@@ -343,3 +464,66 @@ class SNGProcessor(ExcelSupplierProcessor):
             file_paths = filtered_paths
         
         return super().process_files(file_paths)
+
+
+class ManeProcessor(ExcelSupplierProcessor):
+    """Specialized processor for Mane Concept with barcode handling."""
+    
+    def process_files(self, file_paths: List[str]) -> SupplierInventory:
+        """Process MANE files with special barcode handling."""
+        if not file_paths:
+            raise ValueError(f"No files provided for {self.supplier_code}")
+        
+        file_path = file_paths[0]
+        if not os.path.exists(file_path):
+            raise ValueError(f"File not found: {file_path}")
+        
+        try:
+            # Load with specific dtype for Barcode column
+            df = pd.read_excel(file_path, dtype={'Barcode': str})
+            logger.info(f"Loaded {len(df)} rows from {file_path}")
+            
+        except Exception as e:
+            raise ValueError(f"Error reading Excel file {file_path}: {e}")
+        
+        # Standardize and clean data
+        standardized_df = self._standardize_dataframe(df)
+        cleaned_df = self._clean_inventory_data(standardized_df)
+        
+        # MANE-specific rule: set inventory to 0 if less than 10
+        cleaned_df.loc[cleaned_df['company Inventory'] < 10, 'company Inventory'] = 0
+        
+        # Convert to inventory items
+        items = self._dataframe_to_inventory_items(cleaned_df)
+        
+        return SupplierInventory(
+            supplier_code=self.supplier_code,
+            items=items,
+            last_sync=datetime.now(),
+            file_sources=[file_path]
+        )
+
+# Usage example
+if __name__ == "__main__":
+    """
+    Example usage of supplier configuration and processing.
+    """
+    from .config import ConfigManager
+    
+    # Initialize configuration manager
+    config_manager = ConfigManager(root_path='')
+    
+    # Get configuration for a specific supplier
+    al_config = config_manager.get_supplier_config('AL')
+    print(f"AL Supplier: {al_config.name}")
+    print(f"Email Subject: {al_config.email_subject}")
+    print(f"File Format: {al_config.file_format}")
+    
+    # Create processor for the supplier
+    processor = SupplierProcessorFactory.create_processor('AL', al_config.__dict__)
+    print(f"Created processor: {type(processor).__name__}")
+    
+    # Example of processing files (would need actual files)
+    # file_paths = ['inv_data/AL_brs inv.xls', 'inv_data/AL_inv.xls']
+    # inventory = processor.process_files(file_paths)
+    # print(f"Processed {inventory.item_count} items")

@@ -3,6 +3,32 @@ Configuration management models and utilities for the Streamlit inventory system
 
 This module provides centralized configuration management with structured data models
 for suppliers, database connections, and Amazon API settings.
+
+Supplier Configuration Mapping:
+==============================
+
+This module maps the existing keyword_mailadd.json configuration to structured 
+SupplierConfig objects with detailed processing rules for each supplier:
+
+- AL (Alicia International): Excel files, dual file processing (brs + inv)
+- VF (Amekor/Vivica Fox): Excel files, barcode handling, inventory threshold
+- BY (Bobbi Boss): Excel files, skip rows, inventory threshold  
+- NBF (Chade Fashions): Excel files, inventory letter mapping (A/B/C/X)
+- OUTRE (Outre): CSV files, tab-separated, Y/N inventory mapping
+- HZ (Harlem 125): CSV files, tab-separated, Y/N inventory mapping
+- SNG (SNG Hair): Excel files, filename filtering, Y/N inventory mapping
+- MANE (Mane Concept): Excel files, barcode handling, inventory threshold
+
+Each supplier configuration includes:
+- Email search criteria (subject, from address, folder)
+- File format and processing rules
+- Column mappings for standardization
+- Data type specifications
+- Inventory value transformations
+- File naming patterns and filters
+
+The configuration system enables the creation of specialized processor classes
+for each supplier while maintaining a consistent interface.
 """
 
 import json
@@ -208,6 +234,33 @@ class ConfigManager:
         
         return configs[supplier_code]
     
+    def get_supplier_codes(self) -> List[str]:
+        """
+        Get list of all available supplier codes.
+        
+        Returns:
+            List of supplier codes
+        """
+        return list(self.get_supplier_configs().keys())
+    
+    def create_supplier_processor(self, supplier_code: str):
+        """
+        Create a processor instance for the specified supplier.
+        
+        Args:
+            supplier_code: Supplier code (e.g., 'AL', 'VF')
+            
+        Returns:
+            SupplierProcessor instance configured for the supplier
+            
+        Raises:
+            ConfigurationError: If supplier configuration not found
+        """
+        from .supplier import SupplierProcessorFactory
+        
+        config = self.get_supplier_config(supplier_code)
+        return SupplierProcessorFactory.create_processor(supplier_code, config.__dict__)
+    
     def get_database_config(self) -> DatabaseConfig:
         """
         Get database configuration.
@@ -388,22 +441,22 @@ class ConfigManager:
                 'extended_description_column': 'ItemCodeDesc'
             },
             'VF': {
-                'upc_column': 'AliasItemNo',
-                'inventory_column': 'OnHand Customer',
-                'description_column': 'ItemCode',
-                'extended_description_column': 'ItemCodeDesc'
+                'upc_column': 'Barcode',
+                'inventory_column': 'On hand',
+                'description_column': 'Product ID',
+                'extended_description_column': 'SKU'
             },
             'BY': {
-                'upc_column': 'AliasItemNo',
-                'inventory_column': 'OnHand Customer',
-                'description_column': 'ItemCode',
-                'extended_description_column': 'ItemCodeDesc'
+                'upc_column': 'Barcode',
+                'inventory_column': 'O/H',
+                'description_column': 'Item Name',
+                'extended_description_column': 'Color'
             },
             'NBF': {
-                'upc_column': 'AliasItemNo',
-                'inventory_column': 'OnHand Customer',
-                'description_column': 'ItemCode',
-                'extended_description_column': 'ItemCodeDesc'
+                'upc_column': 'UPC Code',
+                'inventory_column': 'Unnamed: 6',
+                'description_column': 'No.',
+                'extended_description_column': 'Description'
             },
             'OUTRE': {
                 'upc_column': 'BARCODE',
@@ -424,10 +477,10 @@ class ConfigManager:
                 'extended_description_column': 'Descrip'
             },
             'MANE': {
-                'upc_column': 'AliasItemNo',
-                'inventory_column': 'OnHand Customer',
-                'description_column': 'ItemCode',
-                'extended_description_column': 'ItemCodeDesc'
+                'upc_column': 'Barcode',
+                'inventory_column': 'AQOH',
+                'description_column': 'Item',
+                'extended_description_column': 'Color'
             }
         }
         return mapping_dict.get(code, {})
@@ -440,26 +493,32 @@ class ConfigManager:
                 'file_names': ['AL_brs inv.xls', 'AL_inv.xls'],
                 'concat_files': True,
                 'inventory_type': 'int',
-                'email_folder': '"[Gmail]/All Mail"'
+                'email_folder': '"[Gmail]/All Mail"',
+                'file_patterns': ['*brs*', '*inv*']
             },
             'VF': {
                 'multiple_files': False,
                 'file_names': ['VF_Inventory.xls'],
                 'inventory_type': 'int',
-                'email_folder': '"[Gmail]/All Mail"'
+                'email_folder': '"[Gmail]/All Mail"',
+                'dtype_overrides': {'Barcode': str},
+                'numeric_conversion': True,
+                'min_inventory_threshold': 10
             },
             'BY': {
                 'multiple_files': False,
                 'file_names': ['BY_InventoryListAll.xls'],
                 'inventory_type': 'int',
-                'email_folder': '"[Gmail]/All Mail"'
+                'email_folder': '"[Gmail]/All Mail"',
+                'skiprows': 3,
+                'min_inventory_threshold': 10
             },
             'NBF': {
-                'multiple_files': True,
-                'file_names': ['NBF_Chade Fashions.xlsx', 'NBF_Chade Fashions-NEW.xlsx'],
-                'concat_files': True,
-                'inventory_type': 'int',
-                'email_folder': '"[Gmail]/All Mail"'
+                'multiple_files': False,
+                'file_names': ['NBF_Chade Fashions.xlsx'],
+                'inventory_mapping': {'A': 20, 'B': 5, 'C': 0, 'X': 0},
+                'email_folder': '"[Gmail]/All Mail"',
+                'file_extension_filter': '.xlsx'
             },
             'OUTRE': {
                 'multiple_files': False,
@@ -477,29 +536,34 @@ class ConfigManager:
                 'skiprows': [1],
                 'skipfooter': 1,
                 'inventory_mapping': {'Y': 20, 'N': 0},
-                'email_folder': 'Company/Harlem125'
+                'email_folder': 'Company/Sensationnel'
             },
             'SNG': {
                 'multiple_files': False,
                 'file_names': ['SNG_inv.xlsx'],
                 'inventory_mapping': {'Y': 20, 'N': 0},
                 'filename_length_filter': 9,
-                'email_folder': '"[Gmail]/All Mail"'
+                'email_folder': '"[Gmail]/All Mail"',
+                'email_search_backwards': True
             },
             'MANE': {
                 'multiple_files': False,
                 'file_names': ['MANE_inv.xlsx'],
                 'inventory_type': 'int',
-                'email_folder': '"[Gmail]/All Mail"'
+                'email_folder': '"[Gmail]/All Mail"',
+                'dtype_overrides': {'Barcode': str},
+                'min_inventory_threshold': 10
             }
         }
         return rules_mapping.get(code, {})
     
     def _get_supplier_dtypes(self, code: str) -> Optional[Dict[str, type]]:
         """Get data types for supplier columns."""
-        # Most suppliers use default pandas inference
-        # Special cases can be added here if needed
-        return None
+        dtype_mapping = {
+            'VF': {'Barcode': str},
+            'MANE': {'Barcode': str}
+        }
+        return dtype_mapping.get(code, None)
     
     def _get_supplier_encoding(self, code: str) -> str:
         """Get file encoding for supplier."""
