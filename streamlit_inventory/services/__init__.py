@@ -7,10 +7,12 @@ from .database_service import DatabaseService
 from .email_service import EmailService
 from .amazon_service import AmazonService
 from .data_service import DataService
+from .inventory_service import InventoryService
 
 __all__ = [
     'DatabaseService',
     'EmailService', 
     'AmazonService',
-    'DataService'
+    'DataService',
+    'InventoryService'
 ]

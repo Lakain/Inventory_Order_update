@@ -1,0 +1,42 @@
+2025-09-27 18:16:49,279 - inventory_app - INFO - Logging initialized
+2025-09-27 18:16:50,432 - services.database_service - ERROR - Database config file not found: appdata/db_auth.json
+2025-09-27 18:16:50,434 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:16:50,435 - services.amazon_service - ERROR - Amazon API config file not found: appdata/api_keys.json
+2025-09-27 18:16:50,449 - services.database_service - ERROR - Database config file not found: appdata/db_auth.json
+2025-09-27 18:16:50,450 - inventory_app.pages.dashboard - ERROR - Database status check failed: [Errno 2] No such file or directory: 'appdata/db_auth.json'
+2025-09-27 18:16:50,459 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:16:50,461 - inventory_app.pages.dashboard - ERROR - Email status check failed: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:16:50,461 - services.amazon_service - ERROR - Amazon API config file not found: appdata/api_keys.json
+2025-09-27 18:16:50,462 - inventory_app.pages.dashboard - ERROR - Amazon API status check failed: [Errno 2] No such file or directory: 'appdata/api_keys.json'
+2025-09-27 18:17:05,412 - inventory_app - INFO - Logging initialized
+2025-09-27 18:17:05,416 - services.database_service - ERROR - Database config file not found: appdata/db_auth.json
+2025-09-27 18:17:05,417 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:05,418 - services.amazon_service - ERROR - Amazon API config file not found: appdata/api_keys.json
+2025-09-27 18:17:05,421 - services.database_service - ERROR - Database config file not found: appdata/db_auth.json
+2025-09-27 18:17:05,422 - inventory_app.pages.dashboard - ERROR - Database status check failed: [Errno 2] No such file or directory: 'appdata/db_auth.json'
+2025-09-27 18:17:05,423 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:05,427 - inventory_app.pages.dashboard - ERROR - Email status check failed: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:05,428 - services.amazon_service - ERROR - Amazon API config file not found: appdata/api_keys.json
+2025-09-27 18:17:05,430 - inventory_app.pages.dashboard - ERROR - Amazon API status check failed: [Errno 2] No such file or directory: 'appdata/api_keys.json'
+2025-09-27 18:17:13,283 - inventory_app - INFO - Logging initialized
+2025-09-27 18:17:13,287 - services.database_service - ERROR - Database config file not found: appdata/db_auth.json
+2025-09-27 18:17:13,288 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:13,289 - services.amazon_service - ERROR - Amazon API config file not found: appdata/api_keys.json
+2025-09-27 18:17:13,293 - services.database_service - ERROR - Database config file not found: appdata/db_auth.json
+2025-09-27 18:17:13,294 - inventory_app.pages.dashboard - ERROR - Database status check failed: [Errno 2] No such file or directory: 'appdata/db_auth.json'
+2025-09-27 18:17:13,295 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:13,296 - inventory_app.pages.dashboard - ERROR - Email status check failed: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:13,296 - services.amazon_service - ERROR - Amazon API config file not found: appdata/api_keys.json
+2025-09-27 18:17:13,297 - inventory_app.pages.dashboard - ERROR - Amazon API status check failed: [Errno 2] No such file or directory: 'appdata/api_keys.json'
+2025-09-27 18:17:13,302 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:13,303 - inventory_app.utils.helpers - ERROR - Error in quick inventory check: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:15,701 - inventory_app - INFO - Logging initialized
+2025-09-27 18:17:15,704 - services.database_service - ERROR - Database config file not found: appdata/db_auth.json
+2025-09-27 18:17:15,705 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:15,706 - services.amazon_service - ERROR - Amazon API config file not found: appdata/api_keys.json
+2025-09-27 18:17:15,711 - services.database_service - ERROR - Database config file not found: appdata/db_auth.json
+2025-09-27 18:17:15,712 - inventory_app.pages.dashboard - ERROR - Database status check failed: [Errno 2] No such file or directory: 'appdata/db_auth.json'
+2025-09-27 18:17:15,713 - services.email_service - ERROR - Configuration file not found: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:15,714 - inventory_app.pages.dashboard - ERROR - Email status check failed: [Errno 2] No such file or directory: 'appdata/gmail_auth.json'
+2025-09-27 18:17:15,714 - services.amazon_service - ERROR - Amazon API config file not found: appdata/api_keys.json
+2025-09-27 18:17:15,715 - inventory_app.pages.dashboard - ERROR - Amazon API status check failed: [Errno 2] No such file or directory: 'appdata/api_keys.json'

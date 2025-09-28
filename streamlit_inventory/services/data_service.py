@@ -62,6 +62,10 @@ class DataService:
         """
         Process supplier inventory file using supplier-specific processor.
         Includes validation and standardization.
+        
+        Args:
+            supplier_code: Supplier code (AL, VF, BY, NBF, OUTRE, HZ, SNG, MANE)
+            file_path: Optional path to specific file to process (for manual uploads)
         """
         if supplier_code not in self._supplier_processors:
             raise ValueError(f"Unknown supplier code: {supplier_code}")
@@ -82,6 +86,7 @@ class DataService:
             if not is_valid:
                 logger.warning(f"Data validation issues for {supplier_code}: {errors}")
             
+            logger.info(f"Successfully processed {supplier_code} file: {len(processed_data)} records")
             return processed_data
             
         except Exception as e:
@@ -643,17 +648,42 @@ class AliciaProcessor(SupplierProcessor):
         """
         Process AL inventory files (both brs and regular inv).
         Extracted from invUpdateWindow.py update_AL() method.
+        
+        Args:
+            file_path: Optional path to manually uploaded file. If provided, processes single file.
+                      If None, processes default AL_brs inv.xls and AL_inv.xls files.
         """
         try:
-            # Load both files - exact pattern from original code
-            temp1 = pd.read_excel(f'{self.root_path}inv_data/AL_brs inv.xls')
-            temp2 = pd.read_excel(f'{self.root_path}inv_data/AL_inv.xls')
+            if file_path:
+                # Process manually uploaded file
+                logger.info(f"Processing manually uploaded AL file: {file_path}")
+                new_inv = pd.read_excel(file_path)
+                
+                # Try to identify file structure and map columns appropriately
+                if 'AliasItemNo' in new_inv.columns and 'OnHand Customer' in new_inv.columns:
+                    # Standard AL format
+                    new_inv = new_inv[['AliasItemNo', 'OnHand Customer', 'ItemCode', 'ItemCodeDesc']]
+                else:
+                    # Try to auto-detect columns based on common patterns
+                    column_mapping = self._detect_al_columns(new_inv.columns)
+                    if column_mapping:
+                        new_inv = new_inv[list(column_mapping.keys())]
+                        new_inv.columns = list(column_mapping.values())
+                    else:
+                        raise ValueError("Could not identify AL file format in uploaded file")
+                
+            else:
+                # Load both default files - exact pattern from original code
+                temp1 = pd.read_excel(f'{self.root_path}inv_data/AL_brs inv.xls')
+                temp2 = pd.read_excel(f'{self.root_path}inv_data/AL_inv.xls')
+                
+                # Combine files
+                new_inv = pd.concat([temp1, temp2], ignore_index=True)
+                
+                # Select and rename columns - exact mapping from original
+                new_inv = new_inv[['AliasItemNo', 'OnHand Customer', 'ItemCode', 'ItemCodeDesc']]
             
-            # Combine files
-            new_inv = pd.concat([temp1, temp2], ignore_index=True)
-            
-            # Select and rename columns - exact mapping from original
-            new_inv = new_inv[['AliasItemNo', 'OnHand Customer', 'ItemCode', 'ItemCodeDesc']]
+            # Add company identifier and standardize column names
             new_inv.insert(0, 'Company', 'AL')
             new_inv.columns = self.column_names
             
@@ -667,6 +697,26 @@ class AliciaProcessor(SupplierProcessor):
         except Exception as e:
             logger.error(f"Error processing AL files: {e}")
             raise
+    
+    def _detect_al_columns(self, columns: List[str]) -> Optional[Dict[str, str]]:
+        """Detect AL column mapping from uploaded file."""
+        # Common AL column patterns
+        patterns = {
+            'AliasItemNo': ['AliasItemNo', 'Alias', 'UPC', 'Barcode', 'Item No'],
+            'OnHand Customer': ['OnHand Customer', 'OnHand', 'Quantity', 'Qty', 'Stock'],
+            'ItemCode': ['ItemCode', 'Item Code', 'Code', 'SKU'],
+            'ItemCodeDesc': ['ItemCodeDesc', 'Description', 'Desc', 'Item Description']
+        }
+        
+        mapping = {}
+        for target_col, possible_names in patterns.items():
+            for col in columns:
+                if any(pattern.lower() in col.lower() for pattern in possible_names):
+                    mapping[col] = target_col
+                    break
+        
+        # Return mapping only if we found all required columns
+        return mapping if len(mapping) >= 2 else None
 
 
 class AmekorProcessor(SupplierProcessor):
@@ -676,13 +726,33 @@ class AmekorProcessor(SupplierProcessor):
         """
         Process VF inventory file.
         Extracted from invUpdateWindow.py update_VF() method.
+        
+        Args:
+            file_path: Optional path to manually uploaded file
         """
         try:
-            # Load file with specific dtype - exact pattern from original
-            new_inv = pd.read_excel(f'{self.root_path}inv_data/VF_Inventory.xls', dtype={'Barcode': str})
+            if file_path:
+                # Process manually uploaded file
+                logger.info(f"Processing manually uploaded VF file: {file_path}")
+                new_inv = pd.read_excel(file_path, dtype={'Barcode': str})
+                
+                # Try to identify VF file structure
+                if 'Barcode' in new_inv.columns and 'On hand' in new_inv.columns:
+                    new_inv = new_inv[['Barcode', 'On hand', 'Product ID', 'SKU']]
+                else:
+                    # Auto-detect columns
+                    column_mapping = self._detect_vf_columns(new_inv.columns)
+                    if column_mapping:
+                        new_inv = new_inv[list(column_mapping.keys())]
+                        new_inv.columns = list(column_mapping.values())
+                    else:
+                        raise ValueError("Could not identify VF file format in uploaded file")
+            else:
+                # Load default file with specific dtype - exact pattern from original
+                new_inv = pd.read_excel(f'{self.root_path}inv_data/VF_Inventory.xls', dtype={'Barcode': str})
+                new_inv = new_inv[['Barcode', 'On hand', 'Product ID', 'SKU']]
             
-            # Select and rename columns - exact mapping from original
-            new_inv = new_inv[['Barcode', 'On hand', 'Product ID', 'SKU']]
+            # Add company identifier
             new_inv.insert(0, 'Company', 'VF')
             
             # Clean barcode data - exact logic from original
@@ -703,6 +773,24 @@ class AmekorProcessor(SupplierProcessor):
         except Exception as e:
             logger.error(f"Error processing VF file: {e}")
             raise
+    
+    def _detect_vf_columns(self, columns: List[str]) -> Optional[Dict[str, str]]:
+        """Detect VF column mapping from uploaded file."""
+        patterns = {
+            'Barcode': ['Barcode', 'UPC', 'Code'],
+            'On hand': ['On hand', 'OnHand', 'Quantity', 'Qty', 'Stock'],
+            'Product ID': ['Product ID', 'ProductID', 'ID', 'SKU'],
+            'SKU': ['SKU', 'Item', 'Description', 'Desc']
+        }
+        
+        mapping = {}
+        for target_col, possible_names in patterns.items():
+            for col in columns:
+                if any(pattern.lower() in col.lower() for pattern in possible_names):
+                    mapping[col] = target_col
+                    break
+        
+        return mapping if len(mapping) >= 2 else None
 
 
 class BoyangProcessor(SupplierProcessor):
@@ -711,10 +799,28 @@ class BoyangProcessor(SupplierProcessor):
     def process_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
         """Process BY inventory file."""
         try:
-            new_inv = pd.read_excel(f'{self.root_path}inv_data/BY_InventoryListAll.xls', skiprows=3)
+            if file_path:
+                logger.info(f"Processing manually uploaded BY file: {file_path}")
+                new_inv = pd.read_excel(file_path)
+                
+                # Try to detect BY format (may need to skip rows)
+                if 'Barcode' not in new_inv.columns and len(new_inv) > 3:
+                    new_inv = pd.read_excel(file_path, skiprows=3)
+                
+                if 'Barcode' in new_inv.columns and 'O/H' in new_inv.columns:
+                    new_inv = new_inv[['Barcode', 'O/H', 'Item Name', 'Color']]
+                else:
+                    column_mapping = self._detect_by_columns(new_inv.columns)
+                    if column_mapping:
+                        new_inv = new_inv[list(column_mapping.keys())]
+                        new_inv.columns = list(column_mapping.values())
+                    else:
+                        raise ValueError("Could not identify BY file format in uploaded file")
+            else:
+                new_inv = pd.read_excel(f'{self.root_path}inv_data/BY_InventoryListAll.xls', skiprows=3)
+                new_inv = new_inv[['Barcode', 'O/H', 'Item Name', 'Color']]
             
-            # Select and rename columns
-            new_inv = new_inv[['Barcode', 'O/H', 'Item Name', 'Color']]
+            # Add company identifier and standardize columns
             new_inv.insert(0, 'Company', 'BY')
             new_inv.columns = self.column_names
             
@@ -723,11 +829,30 @@ class BoyangProcessor(SupplierProcessor):
             new_inv['company Inventory'] = new_inv['company Inventory'].astype('int')
             new_inv.loc[new_inv['company Inventory'] < 10, 'company Inventory'] = 0
             
+            logger.info(f"Processed BY inventory: {len(new_inv)} records")
             return new_inv
             
         except Exception as e:
             logger.error(f"Error processing BY file: {e}")
             raise
+    
+    def _detect_by_columns(self, columns: List[str]) -> Optional[Dict[str, str]]:
+        """Detect BY column mapping from uploaded file."""
+        patterns = {
+            'Barcode': ['Barcode', 'UPC', 'Code'],
+            'O/H': ['O/H', 'OnHand', 'Quantity', 'Qty', 'Stock'],
+            'Item Name': ['Item Name', 'Item', 'Name', 'Description'],
+            'Color': ['Color', 'Colour', 'Shade']
+        }
+        
+        mapping = {}
+        for target_col, possible_names in patterns.items():
+            for col in columns:
+                if any(pattern.lower() in col.lower() for pattern in possible_names):
+                    mapping[col] = target_col
+                    break
+        
+        return mapping if len(mapping) >= 2 else None
 
 
 class ChadeProcessor(SupplierProcessor):
@@ -736,22 +861,65 @@ class ChadeProcessor(SupplierProcessor):
     def process_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
         """Process NBF inventory file."""
         try:
-            new_inv = pd.read_excel(f'{self.root_path}inv_data/NBF_Chade Fashions.xlsx')
+            if file_path:
+                logger.info(f"Processing manually uploaded NBF file: {file_path}")
+                new_inv = pd.read_excel(file_path)
+                
+                if 'UPC Code' in new_inv.columns:
+                    # Try to find the inventory column (often unnamed)
+                    inventory_col = None
+                    for col in new_inv.columns:
+                        if 'Unnamed' in str(col) or col in ['Stock', 'Qty', 'Inventory', 'Available']:
+                            inventory_col = col
+                            break
+                    
+                    if inventory_col:
+                        new_inv = new_inv[['UPC Code', inventory_col, 'No.', 'Description']]
+                    else:
+                        raise ValueError("Could not identify inventory column in NBF file")
+                else:
+                    column_mapping = self._detect_nbf_columns(new_inv.columns)
+                    if column_mapping:
+                        new_inv = new_inv[list(column_mapping.keys())]
+                        new_inv.columns = list(column_mapping.values())
+                    else:
+                        raise ValueError("Could not identify NBF file format in uploaded file")
+            else:
+                new_inv = pd.read_excel(f'{self.root_path}inv_data/NBF_Chade Fashions.xlsx')
+                new_inv = new_inv[['UPC Code', 'Unnamed: 6', 'No.', 'Description']]
             
-            # Select and rename columns
-            new_inv = new_inv[['UPC Code', 'Unnamed: 6', 'No.', 'Description']]
+            # Add company identifier and standardize columns
             new_inv.insert(0, 'Company', 'NBF')
             new_inv.columns = self.column_names
             
-            # Clean data
+            # Clean data and apply NBF-specific inventory mapping
             new_inv = new_inv.dropna(subset=['UPC', 'company Inventory'])
             new_inv[['company Inventory']] = new_inv[['company Inventory']].replace({'A': 20, 'B': 5, 'C': 0, 'X': 0})
             
+            logger.info(f"Processed NBF inventory: {len(new_inv)} records")
             return new_inv
             
         except Exception as e:
             logger.error(f"Error processing NBF file: {e}")
             raise
+    
+    def _detect_nbf_columns(self, columns: List[str]) -> Optional[Dict[str, str]]:
+        """Detect NBF column mapping from uploaded file."""
+        patterns = {
+            'UPC Code': ['UPC Code', 'UPC', 'Barcode', 'Code'],
+            'Unnamed: 6': ['Unnamed', 'Stock', 'Qty', 'Inventory', 'Available'],
+            'No.': ['No.', 'No', 'Number', 'Item No'],
+            'Description': ['Description', 'Desc', 'Name', 'Item']
+        }
+        
+        mapping = {}
+        for target_col, possible_names in patterns.items():
+            for col in columns:
+                if any(pattern.lower() in str(col).lower() for pattern in possible_names):
+                    mapping[col] = target_col
+                    break
+        
+        return mapping if len(mapping) >= 2 else None
 
 
 class OutreProcessor(SupplierProcessor):
@@ -760,26 +928,66 @@ class OutreProcessor(SupplierProcessor):
     def process_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
         """Process OUTRE inventory file."""
         try:
-            new_inv = pd.read_csv(
-                f'{self.root_path}inv_data/OUTRE_StockAvailability.csv',
-                sep='\t', encoding='utf_16', on_bad_lines='warn',
-                skiprows=[1], skipfooter=1, engine='python'
-            )
+            if file_path:
+                logger.info(f"Processing manually uploaded OUTRE file: {file_path}")
+                # Try different encodings and separators for uploaded files
+                try:
+                    new_inv = pd.read_csv(file_path, sep='\t', encoding='utf_16', on_bad_lines='warn')
+                except:
+                    try:
+                        new_inv = pd.read_csv(file_path, encoding='utf-8')
+                    except:
+                        new_inv = pd.read_excel(file_path)
+                
+                if 'BARCODE' in new_inv.columns and 'AVAIL' in new_inv.columns:
+                    new_inv = new_inv[['BARCODE', 'AVAIL', 'ITEM', 'COLOR']]
+                else:
+                    column_mapping = self._detect_outre_columns(new_inv.columns)
+                    if column_mapping:
+                        new_inv = new_inv[list(column_mapping.keys())]
+                        new_inv.columns = list(column_mapping.values())
+                    else:
+                        raise ValueError("Could not identify OUTRE file format in uploaded file")
+            else:
+                new_inv = pd.read_csv(
+                    f'{self.root_path}inv_data/OUTRE_StockAvailability.csv',
+                    sep='\t', encoding='utf_16', on_bad_lines='warn',
+                    skiprows=[1], skipfooter=1, engine='python'
+                )
+                new_inv = new_inv[['BARCODE', 'AVAIL', 'ITEM', 'COLOR']]
             
-            # Select and rename columns
-            new_inv = new_inv[['BARCODE', 'AVAIL', 'ITEM', 'COLOR']]
+            # Add company identifier and standardize columns
             new_inv.insert(0, 'Company', 'OUTRE')
             new_inv.columns = self.column_names
             
-            # Clean data
+            # Clean data and apply OUTRE-specific availability mapping
             new_inv = new_inv.dropna(subset=['UPC', 'company Inventory'])
             new_inv[['company Inventory']] = new_inv[['company Inventory']].replace({'Y': 20, 'N': 0})
             
+            logger.info(f"Processed OUTRE inventory: {len(new_inv)} records")
             return new_inv
             
         except Exception as e:
             logger.error(f"Error processing OUTRE file: {e}")
             raise
+    
+    def _detect_outre_columns(self, columns: List[str]) -> Optional[Dict[str, str]]:
+        """Detect OUTRE column mapping from uploaded file."""
+        patterns = {
+            'BARCODE': ['BARCODE', 'UPC', 'Code', 'Barcode'],
+            'AVAIL': ['AVAIL', 'Available', 'Stock', 'Availability'],
+            'ITEM': ['ITEM', 'Item', 'Name', 'Description'],
+            'COLOR': ['COLOR', 'Color', 'Colour', 'Shade']
+        }
+        
+        mapping = {}
+        for target_col, possible_names in patterns.items():
+            for col in columns:
+                if any(pattern.lower() in col.lower() for pattern in possible_names):
+                    mapping[col] = target_col
+                    break
+        
+        return mapping if len(mapping) >= 2 else None
 
 
 class SensationnelProcessor(SupplierProcessor):
@@ -788,26 +996,66 @@ class SensationnelProcessor(SupplierProcessor):
     def process_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
         """Process HZ inventory file."""
         try:
-            new_inv = pd.read_csv(
-                f'{self.root_path}inv_data/HZ_StockAvailability.csv',
-                sep='\t', encoding='utf_16', on_bad_lines='warn',
-                skiprows=[1], skipfooter=1, engine='python'
-            )
+            if file_path:
+                logger.info(f"Processing manually uploaded HZ file: {file_path}")
+                # Try different encodings and separators for uploaded files
+                try:
+                    new_inv = pd.read_csv(file_path, sep='\t', encoding='utf_16', on_bad_lines='warn')
+                except:
+                    try:
+                        new_inv = pd.read_csv(file_path, encoding='utf-8')
+                    except:
+                        new_inv = pd.read_excel(file_path)
+                
+                if 'BARCODE' in new_inv.columns and 'AVAIL' in new_inv.columns:
+                    new_inv = new_inv[['BARCODE', 'AVAIL', 'ITEM', 'COLOR']]
+                else:
+                    column_mapping = self._detect_hz_columns(new_inv.columns)
+                    if column_mapping:
+                        new_inv = new_inv[list(column_mapping.keys())]
+                        new_inv.columns = list(column_mapping.values())
+                    else:
+                        raise ValueError("Could not identify HZ file format in uploaded file")
+            else:
+                new_inv = pd.read_csv(
+                    f'{self.root_path}inv_data/HZ_StockAvailability.csv',
+                    sep='\t', encoding='utf_16', on_bad_lines='warn',
+                    skiprows=[1], skipfooter=1, engine='python'
+                )
+                new_inv = new_inv[['BARCODE', 'AVAIL', 'ITEM', 'COLOR']]
             
-            # Select and rename columns
-            new_inv = new_inv[['BARCODE', 'AVAIL', 'ITEM', 'COLOR']]
+            # Add company identifier and standardize columns
             new_inv.insert(0, 'Company', 'HZ')
             new_inv.columns = self.column_names
             
-            # Clean data
+            # Clean data and apply HZ-specific availability mapping
             new_inv = new_inv.dropna(subset=['UPC', 'company Inventory'])
             new_inv[['company Inventory']] = new_inv[['company Inventory']].replace({'Y': 20, 'N': 0})
             
+            logger.info(f"Processed HZ inventory: {len(new_inv)} records")
             return new_inv
             
         except Exception as e:
             logger.error(f"Error processing HZ file: {e}")
             raise
+    
+    def _detect_hz_columns(self, columns: List[str]) -> Optional[Dict[str, str]]:
+        """Detect HZ column mapping from uploaded file."""
+        patterns = {
+            'BARCODE': ['BARCODE', 'UPC', 'Code', 'Barcode'],
+            'AVAIL': ['AVAIL', 'Available', 'Stock', 'Availability'],
+            'ITEM': ['ITEM', 'Item', 'Name', 'Description'],
+            'COLOR': ['COLOR', 'Color', 'Colour', 'Shade']
+        }
+        
+        mapping = {}
+        for target_col, possible_names in patterns.items():
+            for col in columns:
+                if any(pattern.lower() in col.lower() for pattern in possible_names):
+                    mapping[col] = target_col
+                    break
+        
+        return mapping if len(mapping) >= 2 else None
 
 
 class ShakeNGoProcessor(SupplierProcessor):
@@ -816,22 +1064,55 @@ class ShakeNGoProcessor(SupplierProcessor):
     def process_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
         """Process SNG inventory file."""
         try:
-            new_inv = pd.read_excel(f'{self.root_path}inv_data/SNG_inv.xlsx')
+            if file_path:
+                logger.info(f"Processing manually uploaded SNG file: {file_path}")
+                new_inv = pd.read_excel(file_path)
+                
+                if 'Barcode' in new_inv.columns and 'Available' in new_inv.columns:
+                    new_inv = new_inv[['Barcode', 'Available', 'Item', 'Descrip']]
+                else:
+                    column_mapping = self._detect_sng_columns(new_inv.columns)
+                    if column_mapping:
+                        new_inv = new_inv[list(column_mapping.keys())]
+                        new_inv.columns = list(column_mapping.values())
+                    else:
+                        raise ValueError("Could not identify SNG file format in uploaded file")
+            else:
+                new_inv = pd.read_excel(f'{self.root_path}inv_data/SNG_inv.xlsx')
+                new_inv = new_inv[['Barcode', 'Available', 'Item', 'Descrip']]
             
-            # Select and rename columns
-            new_inv = new_inv[['Barcode', 'Available', 'Item', 'Descrip']]
+            # Add company identifier and standardize columns
             new_inv.insert(0, 'Company', 'SNG')
             new_inv.columns = self.column_names
             
-            # Clean data
+            # Clean data and apply SNG-specific availability mapping
             new_inv = new_inv.dropna(subset=['UPC', 'company Inventory'])
             new_inv[['company Inventory']] = new_inv[['company Inventory']].replace({'Y': 20, 'N': 0})
             
+            logger.info(f"Processed SNG inventory: {len(new_inv)} records")
             return new_inv
             
         except Exception as e:
             logger.error(f"Error processing SNG file: {e}")
             raise
+    
+    def _detect_sng_columns(self, columns: List[str]) -> Optional[Dict[str, str]]:
+        """Detect SNG column mapping from uploaded file."""
+        patterns = {
+            'Barcode': ['Barcode', 'UPC', 'Code'],
+            'Available': ['Available', 'Avail', 'Stock', 'Availability'],
+            'Item': ['Item', 'Name', 'Product'],
+            'Descrip': ['Descrip', 'Description', 'Desc', 'Details']
+        }
+        
+        mapping = {}
+        for target_col, possible_names in patterns.items():
+            for col in columns:
+                if any(pattern.lower() in col.lower() for pattern in possible_names):
+                    mapping[col] = target_col
+                    break
+        
+        return mapping if len(mapping) >= 2 else None
 
 
 class ManeProcessor(SupplierProcessor):
@@ -840,10 +1121,24 @@ class ManeProcessor(SupplierProcessor):
     def process_file(self, file_path: Optional[str] = None) -> pd.DataFrame:
         """Process MANE inventory file."""
         try:
-            new_inv = pd.read_excel(f'{self.root_path}inv_data/MANE_inv.xlsx', dtype={'Barcode': str})
+            if file_path:
+                logger.info(f"Processing manually uploaded MANE file: {file_path}")
+                new_inv = pd.read_excel(file_path, dtype={'Barcode': str})
+                
+                if 'Barcode' in new_inv.columns and 'AQOH' in new_inv.columns:
+                    new_inv = new_inv[['Barcode', 'AQOH', 'Item', 'Color']]
+                else:
+                    column_mapping = self._detect_mane_columns(new_inv.columns)
+                    if column_mapping:
+                        new_inv = new_inv[list(column_mapping.keys())]
+                        new_inv.columns = list(column_mapping.values())
+                    else:
+                        raise ValueError("Could not identify MANE file format in uploaded file")
+            else:
+                new_inv = pd.read_excel(f'{self.root_path}inv_data/MANE_inv.xlsx', dtype={'Barcode': str})
+                new_inv = new_inv[['Barcode', 'AQOH', 'Item', 'Color']]
             
-            # Select and rename columns
-            new_inv = new_inv[['Barcode', 'AQOH', 'Item', 'Color']]
+            # Add company identifier and standardize columns
             new_inv.insert(0, 'Company', 'MANE')
             new_inv.columns = self.column_names
             
@@ -853,8 +1148,27 @@ class ManeProcessor(SupplierProcessor):
             new_inv['UPC'] = new_inv['UPC'].astype('int64')
             new_inv.loc[new_inv['company Inventory'] < 10, 'company Inventory'] = 0
             
+            logger.info(f"Processed MANE inventory: {len(new_inv)} records")
             return new_inv
             
         except Exception as e:
             logger.error(f"Error processing MANE file: {e}")
             raise
+    
+    def _detect_mane_columns(self, columns: List[str]) -> Optional[Dict[str, str]]:
+        """Detect MANE column mapping from uploaded file."""
+        patterns = {
+            'Barcode': ['Barcode', 'UPC', 'Code'],
+            'AQOH': ['AQOH', 'Quantity', 'Qty', 'Stock', 'OnHand'],
+            'Item': ['Item', 'Name', 'Product', 'Description'],
+            'Color': ['Color', 'Colour', 'Shade']
+        }
+        
+        mapping = {}
+        for target_col, possible_names in patterns.items():
+            for col in columns:
+                if any(pattern.lower() in col.lower() for pattern in possible_names):
+                    mapping[col] = target_col
+                    break
+        
+        return mapping if len(mapping) >= 2 else None

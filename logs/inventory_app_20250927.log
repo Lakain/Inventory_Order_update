@@ -1,0 +1,35 @@
+2025-09-27 18:17:55,846 - inventory_app - INFO - Logging initialized
+2025-09-27 18:17:58,016 - services.email_service - INFO - OAuth2 credentials refreshed successfully
+2025-09-27 18:18:06,763 - inventory_app - INFO - Logging initialized
+2025-09-27 18:18:11,605 - services.inventory_service - INFO - InventoryService initialized
+2025-09-27 18:18:23,220 - inventory_app - INFO - Logging initialized
+2025-09-27 18:18:34,650 - inventory_app - INFO - Logging initialized
+2025-09-27 18:18:35,966 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:35,976 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:41,264 - inventory_app - INFO - Logging initialized
+2025-09-27 18:18:42,502 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:42,503 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:44,278 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:44,279 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:50,007 - inventory_app - INFO - Logging initialized
+2025-09-27 18:18:54,095 - inventory_app - INFO - Logging initialized
+2025-09-27 18:18:55,231 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:55,232 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:58,079 - inventory_app - INFO - Logging initialized
+2025-09-27 18:18:59,254 - inventory_app - INFO - Logging initialized
+2025-09-27 18:18:59,336 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:18:59,337 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:19:00,439 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:19:00,441 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:19:03,833 - inventory_app - INFO - Logging initialized
+2025-09-27 18:19:05,144 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:19:05,145 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:19:05,770 - inventory_app - INFO - Logging initialized
+2025-09-27 18:19:07,141 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:19:07,142 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:19:09,124 - sp_api.base.client - ERROR - Error Response: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 18:19:09,126 - services.amazon_service - ERROR - Amazon API connection test failed: [{'code': 'QuotaExceeded', 'message': 'You exceeded your quota for the requested resource.', 'details': ''}]
+2025-09-27 20:14:08,552 - inventory_app - INFO - Logging initialized
+2025-09-27 20:14:51,920 - inventory_app - INFO - Logging initialized
+2025-09-27 20:14:54,132 - inventory_app - INFO - Logging initialized
+2025-09-27 20:14:56,500 - inventory_app - INFO - Logging initialized
